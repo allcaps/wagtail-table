@@ -588,7 +588,7 @@ changes; required-value validation remains a correctness concern for Phase 4.
 | Initial table size | New blocks start with a 3×3 table and a header row. Recovery insertion also uses Tiptap's default 3×3 size. | Allow choosing rows and columns before insertion. Evaluate simple numeric inputs or an accessible size picker; no particular widget design is chosen yet. Use the existing insertTable options. |
 | Insert control after insertion | Insert table is hidden whenever a table exists, including on load, and restored when the editor becomes empty. | Implemented as a small refinement; keep this behavior during future insertion UX changes. |
 | Empty required block | Verified through admin POST tests: empty drafts save, publication requires a table, and an empty draft cannot replace a published table. required=False permits an empty block. Blank cells are valid. | Keep the native Wagtail validation behavior; run the added browser recovery/draft/publish journey locally or in CI. |
-| Actions/settings design | Persistent toolbar buttons toggle separate panels below the toolbar, with an open-state highlight and keyboard access. | Improve hierarchy, grouping, labels, control states, and focus behavior using Wagtail's design language. Review with real editing tasks before choosing a new layout. |
+| Actions/settings design | Native Wagtail Row, Column, and Cell dropdowns group commands; empty editors show a direct Insert table button. Caption and Summary remain visible below the table. | Review the menu layout with real editing tasks, including narrow screens, keyboard use, and large tables. |
 | Large tables in the editor | The editor container has overflow-x: auto, but the table uses width: 100% and fixed layout inside Wagtail's content column. Existing scrolling alone does not establish that wide tables are comfortable to edit. | Test realistic wide/large tables and long cell content. Evaluate using more available width, preserving a readable minimum cell width with horizontal scrolling, or an expanded editing view. Verify keyboard navigation, focus visibility, multi-cell selection, and StreamField lifecycle behavior in the chosen approach. |
 
 Acceptance for a future refinement pass: retain native persistence and editing
@@ -985,3 +985,73 @@ properties. None is an approved implementation change. Real Wagtail baseline
 screenshots, wide/narrow layouts, screen-reader checks, right-click menus, and
 external-app clipboard checks remain outstanding. No package code or dependencies
 were changed in this research pass.
+
+### Labelled action menus
+
+Implemented the approved first UX refinement using Wagtail's dropdown template
+component and its existing controller, positioning, and dismissal behavior.
+Table contains insertion and edge-header settings; Row and Column contain
+structural commands; Cell contains merge, split, individual header, and selected
+cell alignment commands. Only one menu opens at a time. Escape returns focus to
+the menu button; Escape from the editor focuses Table. Removed visible Undo and
+Redo controls at the user's request, retaining native history keyboard shortcuts.
+
+Caption and description remain visible below the editor. Paste guidance sits
+directly after the table, before those fields. Metadata retains separate help
+explaining the distinction between caption and description. Menus preserve
+native selections, report mixed alignment without an active value, and offer
+horizontal and vertical default resets. Removed blocks destroy their popovers,
+including when Wagtail retains hidden block elements in the form.
+
+Native setCellAttribute can skip a mixed selection when its first cell already
+has the requested value. Compose Tiptap's core updateAttributes commands for data
+and header cells to cover the complete selection instead. No new dependencies,
+custom table transactions, or storage changes were introduced.
+
+Validation: make test passed with 88 Python and 19 TypeScript tests, including
+type, template, formatting, and reproducible-asset checks. Targeted checks using
+real Wagtail controllers in an isolated widget harness passed for keyboard menu
+opening/dismissal, menu switching, selection alignment and resets, merged cells,
+native keyboard history, independent instances, and deleted-block cleanup. These
+checks do not establish that the complete StreamField journeys pass. The updated
+Playwright suite collects 12 tests; its full run remains blocked by the sandbox's
+local-server restriction. Run make test-browser locally or in CI, including the
+new menu, lifecycle, and paste-help placement assertions.
+
+
+### Simplified menus and empty-state insertion
+
+Removed Table after moving First row headers into Row and First column headers
+into Column, separated from structural actions. Their native commands and active
+state indicators remain unchanged. With a table, show Row, Column, and Cell;
+without one, close and hide all menus and show a direct Insert table button.
+Insertion still uses the existing native 3×3 command. Invalid saved values retain
+an error and disabled insertion rather than silently replacing content. Caption
+and description remain visible and disabled while empty.
+
+Escape from the editor now focuses Row when a table exists, or Insert table when
+empty. Updated browser scenarios cover header locations and highlights, menu
+switching, empty-state focus, deletion, undo/redo, draft reload, recovery insertion,
+and protected malformed values. No public API or storage changes.
+
+Validation: make test passed (88 Python tests, 19 TypeScript tests, Django checks,
+Ruff, template checks, TypeScript checking, and reproducible assets). Rebuilt the
+distributed frontend. make test-browser was attempted but its server could not
+start: Operation not permitted. The updated browser journeys require a local or
+CI run; no full browser pass is claimed for this refinement.
+
+### Metadata field presentation
+
+Caption and Summary now use Wagtail's rawformattedfield template tag rather than
+custom label/input markup. Each field has its own nearby help text and unique
+label/help IDs assigned per widget, including aria-describedby on its input.
+Caption identifies the table topic; Summary provides orientation or navigation
+hints for complex tables. Summary is a UI label change only: the description
+JSON property and accessible published rendering are retained. Browser assertions
+check each field's accessible description; full browser execution still requires
+the local/CI server environment.
+
+
+Removed permanent paste guidance at the user's request. Clipboard feedback and
+error announcements remain available when needed; removed the unused help string,
+styles, and editor aria-describedby reference.

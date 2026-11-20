@@ -8,6 +8,9 @@ import Text from '@tiptap/extension-text';
 import { TableKit } from '@tiptap/extension-table';
 import { VerticalAlignment } from '../../frontend/alignment';
 import { headerConfiguration, headerEdges } from '../../frontend/editor';
+import { selectedCellAlignment } from '../../frontend/editor';
+import { EditorState, NodeSelection, TextSelection } from '@tiptap/pm/state';
+import { CellSelection } from '@tiptap/pm/tables';
 
 describe('the one-table persistence boundary', () => {
   it('wraps a native table without changing its content', () => {
@@ -85,5 +88,41 @@ describe('header settings derived from native table nodes', () => {
       expect(cell.toJSON().attrs?.verticalAlign).toBe('middle');
       expect(cell.type.spec.attrs?.align).toBeDefined();
     }
+  });
+});
+
+describe('alignment indicators for the native selection', () => {
+  const schema = getSchema([Document, Paragraph, Text, TableKit, VerticalAlignment]);
+
+  it('reads a cursor cell and distinguishes mixed from default alignment', () => {
+    const table: any = structuredClone(basic.table);
+    table.content[0].content[0].attrs = { align: 'right', verticalAlign: 'bottom' };
+    const doc = schema.nodeFromJSON({ type: 'doc', content: [table] });
+    const cells: number[] = [];
+    doc.descendants((node, pos) => {
+      if (node.type.spec.tableRole === 'cell' || node.type.spec.tableRole === 'header_cell') cells.push(pos);
+    });
+    const cursor = EditorState.create({ doc, selection: TextSelection.create(doc, cells[0] + 2) });
+    expect(selectedCellAlignment(cursor)).toEqual({ align: 'right', verticalAlign: 'bottom' });
+    const mixed = cursor.apply(cursor.tr.setSelection(CellSelection.create(doc, cells[0], cells[1])));
+    expect(selectedCellAlignment(mixed)).toEqual({ align: undefined, verticalAlign: undefined });
+    const defaults = cursor.apply(cursor.tr.setSelection(CellSelection.create(doc, cells[2], cells[3])));
+    expect(selectedCellAlignment(defaults)).toEqual({ align: null, verticalAlign: null });
+    const outside = cursor.apply(cursor.tr.setSelection(NodeSelection.create(doc, 0)));
+    expect(selectedCellAlignment(outside)).toEqual({ align: undefined, verticalAlign: undefined });
+  });
+
+  it('reads uniform attributes from a range including a merged cell', () => {
+    const table: any = structuredClone(basic.table);
+    table.content[0].content = [table.content[0].content[0]];
+    table.content[0].content[0].attrs = { colspan: 2, align: 'center', verticalAlign: 'middle' };
+    for (const cell of table.content[1].content) cell.attrs = { align: 'center', verticalAlign: 'middle' };
+    const doc = schema.nodeFromJSON({ type: 'doc', content: [table] });
+    const cells: number[] = [];
+    doc.descendants((node, pos) => {
+      if (node.type.spec.tableRole === 'cell' || node.type.spec.tableRole === 'header_cell') cells.push(pos);
+    });
+    const state = EditorState.create({ doc, selection: CellSelection.create(doc, cells[0], cells[2]) });
+    expect(selectedCellAlignment(state)).toEqual({ align: 'center', verticalAlign: 'middle' });
   });
 });

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { widgetArguments } from './widget-template';
 
 // Exercise the real ProseMirror DOM paste pipeline. These fixtures represent
 // formats; they are not captures proving interoperability with external apps.
@@ -10,13 +11,10 @@ test.beforeEach(async ({ page }) => {
     (window as any).telepath = { register(_name: string, ctor: unknown) { (window as any).TableAdapter = ctor; } };
   });
   await page.addScriptTag({ path: resolve('src/wagtail_table/static/wagtail_table/table.js') });
-  await page.evaluate(() => {
-    const adapter = new (window as any).TableAdapter(
-      '<div data-wagtail-table><input type="hidden"><div data-table-toolbar></div><div data-table-editor></div><p data-table-error hidden></p></div>',
-      { insert: 'Insert table', editor: 'Contents', unsupported: 'Unsupported', invalid: 'Invalid' },
-    );
+  await page.evaluate(args => {
+    const adapter = new (window as any).TableAdapter(...args);
     (window as any).pasteWidget = adapter.render(document.querySelector('#mount'), 'paste', 'paste', null);
-  });
+  }, widgetArguments);
 });
 
 async function paste(page: Page, data: { text?: string; html?: string }) {
@@ -62,14 +60,16 @@ test('TSV, ordinary prose, table growth, and native undo/redo', async ({ page })
   await expect(page.locator('tr').last().locator('td')).toHaveCount(4);
   await expect(page.locator('td').first()).toContainText('Plain');
   const beforeUndo = await value(page);
-  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await page.locator('.tiptap').focus();
+  await page.keyboard.press('ControlOrMeta+Z');
   expect(await value(page)).not.toBe(beforeUndo);
-  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await page.locator('.tiptap').focus();
+  await page.keyboard.press('ControlOrMeta+Shift+Z');
   expect(await value(page)).toBe(beforeUndo);
 });
 
 test('selected ranges retain native clipping/repetition and merged-cell behavior', async ({ page }) => {
-  await page.getByRole('button', { name: 'Insert table', exact: true }).click();
+  await page.evaluate(() => (window as any).pasteWidget.editor.commands.insertTable());
   await selectCells(page, 0, 1);
   await paste(page, { text: 'A\tB\tC' });
   await expect(page.locator('tr').first().locator('td,th')).toHaveText(['A', 'B', '']);

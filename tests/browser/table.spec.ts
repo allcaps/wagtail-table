@@ -16,38 +16,50 @@ test('starter tables save immediately; deleted tables remain empty drafts until 
   await expect(widget.locator('tr')).toHaveCount(3);
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await page.reload();
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
 
   await widget.locator('th p').first().click();
   await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.press('Backspace');
   await expect(widget.locator('table')).toHaveCount(0);
   await expect(insert).toBeVisible();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(0);
   await expect(widget.locator('input[type="hidden"]')).toHaveValue('null');
-  await widget.getByRole('button', { name: 'Undo', exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(insert).toBeFocused();
+  await widget.locator('.tiptap').focus();
+  await page.keyboard.press('ControlOrMeta+Z');
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
-  await widget.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
+  await widget.locator('.tiptap').focus();
+  await page.keyboard.press('ControlOrMeta+Shift+Z');
   await expect(widget.locator('table')).toHaveCount(0);
   await expect(insert).toBeVisible();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await page.reload();
   await expect(widget.locator('table')).toHaveCount(0);
   await expect(insert).toBeVisible();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(0);
   await page.getByRole('navigation', { name: 'Actions (footer)' })
     .getByRole('button', { name: 'More actions', exact: true }).click();
   await page.getByRole('button', { name: 'Publish', exact: true }).click();
   await expect(page.getByText('This field is required.', { exact: true })).toBeVisible();
   await expect(widget.locator('table')).toHaveCount(0);
   await expect(insert).toBeVisible();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(0);
 
   await insert.click();
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
+  await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
   await page.getByRole('navigation', { name: 'Actions (footer)' })
     .getByRole('button', { name: 'More actions', exact: true }).click();
   await page.getByRole('button', { name: 'Publish', exact: true }).click();

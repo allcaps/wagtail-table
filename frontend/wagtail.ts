@@ -1,11 +1,12 @@
 import type { Editor } from '@tiptap/core';
 import { createEditor, tableValue, type TableValue } from './editor';
-import { TableControls, type Strings } from './controls';
+import { TableControls } from './controls';
 import './editor.css';
 import { clipboardMessages } from './clipboard';
 
 type State = TableValue | null | string;
 type Options = { attributes?: Record<string, string> };
+type Strings = Record<string, string>;
 
 declare global {
   interface Window {
@@ -37,21 +38,17 @@ class BoundTable {
     this.input = root.querySelector('input')!;
     this.surface = root.querySelector('[data-table-editor]')!;
     this.status = document.createElement('p');
+    this.status.className = 'help';
     this.status.dataset.tableStatus = '';
     this.status.setAttribute('role', 'status');
     this.status.setAttribute('aria-atomic', 'true');
-    const help = document.createElement('p');
-    help.dataset.tablePasteHelp = '';
-    help.id = `${id}-paste-help`;
-    help.textContent = strings.pasteHelp
-      ?? 'Paste at a text cursor to grow the table. A selected cell range clips or repeats pasted cells. Paste can split merged cells. Undo restores the previous table.';
-    root.append(help, this.status);
+    this.surface.after(this.status);
     this.message = root.querySelector('[data-table-error]')!;
     this.message.id = `${id}-table-error`;
     this.idForLabel = `${id}-editor`;
     this.state = state;
 
-    this.controls = new TableControls(root, id, strings, this.events.signal, () => this.synchronize());
+    this.controls = new TableControls(root, id, this.events.signal, () => this.synchronize());
 
     this.setState(state);
     // Wagtail retains deleted blocks in the form as hidden children. Observe
@@ -101,7 +98,7 @@ class BoundTable {
         }
       }, { signal: this.events.signal });
       dom.setAttribute('aria-describedby', [
-        this.options.attributes?.['aria-describedby'], this.message.id, `${this.input.id}-paste-help`,
+        this.options.attributes?.['aria-describedby'], this.message.id,
       ].filter(Boolean).join(' '));
     }
     this.message.hidden = true;
@@ -150,6 +147,7 @@ class BoundTable {
   }
 
   destroy() {
+    this.controls.destroy();
     this.editor?.destroy();
     this.events.abort();
     this.observer.disconnect();

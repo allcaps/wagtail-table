@@ -85,23 +85,26 @@ JSON. Current features include:
   only when the editor contains no table, including after selecting and deleting
   the table. Saved empty drafts stay empty when reopened. Typing into an empty
   editor can create a native 1×1 table; Insert table creates the usual 3×3 table.
-- Native row/column insertion and deletion, rectangular cell selection, merge,
-  split, undo, and redo, exposed through compact controls.
-- Persistent Table actions and Table settings toolbar buttons toggle separate
-  panels below the toolbar. Open panels highlight their buttons; Enter and Space
-  toggle a focused button. Opening either panel closes the other.
+- Labelled Row, Column, and Cell action menus use Wagtail's dropdowns.
+  Row and Column contain insertion/deletion commands; Cell contains merge,
+  split, header-cell, and selected-cell alignment controls. Opening a menu closes
+  the previous one. Empty editors show only an Insert table button in the toolbar.
 - Independent First row headers and First column headers toggles: turn both off
   for no edge headers, or both on for row and column headers. Header cell toggles
   the selected cells individually. The actual native cells determine the control
-  states; there is no separately stored header mode.
-- Horizontal left/center/right and vertical top/middle/bottom alignment.
-- An optional caption and a separate, visible description linked to the published
-  table with `aria-describedby`.
+  states; there is no separately stored header mode. Find these edge toggles in
+  the Row and Column menus respectively.
+- Horizontal left/center/right and vertical top/middle/bottom alignment, with
+  options to restore defaults. Mixed selections have no active alignment option.
+- An optional Caption and a separate, visible Summary linked to the published
+  table with `aria-describedby`. Both fields remain visible below the table.
+  Summary is stored in the existing `description` property.
 
 Use Tab and Shift+Tab for native cell navigation, Shift+click to select a range,
-and Escape to move from the editor to Table actions. Native Tab at the last cell
-adds a row. Metadata text inputs use ordinary browser undo; the toolbar Undo and
-Redo operate on the native table document.
+and Escape to move from the editor to Row, or Insert table when empty. Escape inside a menu
+closes it and returns focus to its button. Native Tab at the last cell adds a row.
+Use the native undo/redo keyboard shortcuts for table edits. Metadata text inputs
+use ordinary browser undo.
 
 Merging retains the top-left cell's type and alignment and combines native cell
 content. Splitting retains the content in the first cell. Header types inherited

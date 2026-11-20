@@ -5,10 +5,15 @@
 - Start new blocks with a 3×3 table and show Insert table only in empty editors.
   Preserve empty drafts and use native Wagtail required-field validation when
   publishing. Reject any document content outside the single table.
-- Keep Table actions and Table settings buttons visible above their panels;
-  opening either panel closes the other. Use compact form controls and keep
-  merge, split, and header-cell actions together on one row.
+- Group controls in native Wagtail Row, Column, and Cell dropdowns, placing edge
+  header toggles in Row and Column. Empty editors show a direct Insert table
+  button instead of menus.
+  Keep caption and description fields visible below the table.
+  Move selected-cell alignment into Cell, with mixed-selection indicators and
+  default resets. Use keyboard shortcuts for undo/redo instead of toolbar buttons.
 - Keep first-row/column header highlights accurate in custom header layouts.
+- Use Wagtail's field markup for Caption and Summary, with separate help text
+  associated with each input. Summary retains the existing description storage.
 
 ## 0.1.0a1 — 2026-11-20
 

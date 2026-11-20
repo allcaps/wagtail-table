@@ -5,8 +5,9 @@ import Text from '@tiptap/extension-text';
 import HardBreak from '@tiptap/extension-hard-break';
 import { TableKit, TableCell, TableHeader } from '@tiptap/extension-table';
 import { UndoRedo } from '@tiptap/extensions';
-import { TableMap } from '@tiptap/pm/tables';
+import { CellSelection, TableMap } from '@tiptap/pm/tables';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
+import type { EditorState } from '@tiptap/pm/state';
 import { VerticalAlignment } from './alignment';
 import { clipboardProps, type ClipboardNotice } from './clipboard';
 
@@ -54,6 +55,30 @@ export function tableValue(doc: JSONContent, previous: Pick<TableValue, 'caption
 }
 
 export type HeaderConfiguration = 'none' | 'row' | 'column' | 'both' | 'custom';
+
+export function selectedCellAlignment(state: EditorState) {
+  const cells: ProseMirrorNode[] = [];
+  const selection = state.selection;
+  if (selection instanceof CellSelection) {
+    selection.forEachCell(cell => cells.push(cell));
+  } else {
+    for (let depth = selection.$from.depth; depth > 0; depth--) {
+      const node = selection.$from.node(depth);
+      if (node.type.spec.tableRole === 'cell' || node.type.spec.tableRole === 'header_cell') {
+        cells.push(node);
+        break;
+      }
+    }
+  }
+  const alignment: { align: string | null | undefined; verticalAlign: string | null | undefined } = {
+    align: undefined, verticalAlign: undefined,
+  };
+  for (const key of ['align', 'verticalAlign'] as const) {
+    const first = cells[0]?.attrs[key] ?? null;
+    if (cells.length && cells.every(cell => (cell.attrs[key] ?? null) === first)) alignment[key] = first;
+  }
+  return alignment;
+}
 
 // Match the edge cells inspected by ProseMirror's native header toggles.
 // Interior headers do not change whether the first row or column is enabled.

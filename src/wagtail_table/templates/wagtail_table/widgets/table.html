@@ -1,7 +1,94 @@
+{% load i18n wagtailadmin_tags %}
+
 <div class="wagtail-table" data-wagtail-table>
   {% include "django/forms/widgets/hidden.html" %}
 
-  <div data-table-toolbar></div>
-  <div data-table-editor></div>
+  <div data-table-toolbar>
+    <button type="button"
+            class="button button-small button-secondary"
+            data-table-command="insertTable">{% translate "Insert table" %}</button>
+    {% translate "Row" as row_label %}
+    {% dropdown toggle_label=row_label toggle_icon="arrow-down" toggle_classname="button button-small button-secondary" keep_mounted=True attrs='data-table-menu="row"' %}
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="toggleHeaderRow">{% translate "First row headers" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item wagtail-table-menu-separator"
+            data-table-command="addRowBefore">{% translate "Add row before" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="addRowAfter">{% translate "Add row after" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="deleteRow">{% translate "Delete row" %}</button>
+    {% enddropdown %}
+    {% translate "Column" as column_label %}
+    {% dropdown toggle_label=column_label toggle_icon="arrow-down" toggle_classname="button button-small button-secondary" keep_mounted=True attrs='data-table-menu="column"' %}
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="toggleHeaderColumn">{% translate "First column headers" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item wagtail-table-menu-separator"
+            data-table-command="addColumnBefore">{% translate "Add column before" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="addColumnAfter">{% translate "Add column after" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="deleteColumn">{% translate "Delete column" %}</button>
+    {% enddropdown %}
+    {% translate "Cell" as cell_label %}
+    {% dropdown toggle_label=cell_label toggle_icon="arrow-down" toggle_classname="button button-small button-secondary" keep_mounted=True attrs='data-table-menu="cell"' %}
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="mergeCells">{% translate "Merge cells" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="splitCell">{% translate "Split cell" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-command="toggleHeaderCell">{% translate "Header cell" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item wagtail-table-menu-separator"
+            data-table-align="left">{% translate "Align left" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-align="center">{% translate "Align center" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-align="right">{% translate "Align right" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-align="">{% translate "Default horizontal alignment" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item wagtail-table-menu-separator"
+            data-table-valign="top">{% translate "Align top" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-valign="middle">{% translate "Align middle" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-valign="bottom">{% translate "Align bottom" %}</button>
+    <button type="button"
+            class="wagtail-table-menu-item"
+            data-table-valign="">{% translate "Default vertical alignment" %}</button>
+    {% enddropdown %}
+  </div>
+  <p class="help"
+     data-table-header-help
+     hidden>{% translate "Custom headers: keep headers in the top rows or first column for clear relationships." %}</p>
+  <div class="w-field__wrapper" data-table-editor></div>
+  <div data-table-metadata>
+    {% translate "Caption" as caption_label %}
+    {% translate "Identifies the overall topic of a table and is useful in most situations." as caption_help %}
+    {% rawformattedfield label_text=caption_label help_text=caption_help %}
+    <input type="text" data-table-caption>
+    {% endrawformattedfield %}
+    {% translate "Summary" as summary_label %}
+    {% translate "Provides orientation or navigation hints in complex tables." as summary_help %}
+    {% rawformattedfield label_text=summary_label help_text=summary_help %}
+    <textarea rows="2" data-table-description></textarea>
+    {% endrawformattedfield %}
+  </div>
   <p data-table-error role="alert" hidden></p>
 </div>

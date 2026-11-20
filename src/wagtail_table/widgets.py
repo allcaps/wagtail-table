@@ -24,13 +24,7 @@ class TableInputAdapter(WidgetAdapter):
         return [
             widget.render("__NAME__", None, attrs={"id": "__ID__"}),
             {
-                "insert": _("Insert table"),
                 "editor": _("Table contents"),
-                "pasteHelp": _(
-                    "Paste at a text cursor to grow the table. A selected cell range "
-                    "clips or repeats pasted cells. Paste can split merged cells. "
-                    "Undo restores the previous table."
-                ),
                 "pasteUnsupported": _(
                     "This paste contains multiple or nested tables, surrounding text, "
                     "or an unsupported table structure. The table was not changed."
@@ -51,41 +45,6 @@ class TableInputAdapter(WidgetAdapter):
                 "pasteMerged": _(
                     "Native table paste may split intersecting merged cells and "
                     "replace their contents. Undo restores the previous cells."
-                ),
-                "undo": _("Undo"),
-                "redo": _("Redo"),
-                "actions": _("Table actions"),
-                "settings": _("Table settings"),
-                "rows": _("Rows"),
-                "columns": _("Columns"),
-                "choose": _("Choose…"),
-                "addRowBefore": _("Add row before"),
-                "addRowAfter": _("Add row after"),
-                "deleteRow": _("Delete row"),
-                "addColumnBefore": _("Add column before"),
-                "addColumnAfter": _("Add column after"),
-                "deleteColumn": _("Delete column"),
-                "mergeCells": _("Merge cells"),
-                "splitCell": _("Split cell"),
-                "toggleHeaderCell": _("Header cell"),
-                "toggleHeaderRow": _("First row headers"),
-                "toggleHeaderColumn": _("First column headers"),
-                "headerHelp": _(
-                    "Custom headers: keep headers in the top rows or first column "
-                    "for clear relationships."
-                ),
-                "horizontal": _("Horizontal alignment"),
-                "vertical": _("Vertical alignment"),
-                "left": _("Left"),
-                "center": _("Center"),
-                "right": _("Right"),
-                "top": _("Top"),
-                "middle": _("Middle"),
-                "bottom": _("Bottom"),
-                "caption": _("Caption"),
-                "description": _("Description"),
-                "metadataHelp": _(
-                    "The caption names the table. The description explains how to read it."
                 ),
                 "unsupported": _(
                     "Only one table with plain text paragraphs can be saved. "

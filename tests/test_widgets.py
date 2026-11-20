@@ -10,6 +10,13 @@ def test_widget_template_media_and_registration():
     html = widget.render("table", None, attrs={"id": "table-id"})
     assert "data-wagtail-table" in html
     assert 'name="table"' in html
+    for menu in ("row", "column", "cell"):
+        assert f'data-table-menu="{menu}"' in html
+    assert html.count('data-controller="w-dropdown"') == 3
+    assert "data-table-metadata" in html
+    assert "data-table-align" in html
+    assert "data-table-valign" in html
+    assert "Table settings" not in html
     context = JSContext()
     packed = context.pack(widget)
     assert packed["_type"] == "wagtail_table.TableInput"
