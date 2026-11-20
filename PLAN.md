@@ -1,7 +1,7 @@
 # wagtail-table implementation plan
 
 Status: Phases 0–2 complete. Phase 3 implementation and automated verification
-complete; external-source manual checks pending. Phases 4–5 have not started.
+complete; external-source manual checks pending. Phases 4–6 have not started.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -56,11 +56,11 @@ Adapt rather than copy:
 
 - The reference uses `uv venv` and `uv pip install -e '.[test]'`; it does not
   currently contain a committed `uv.lock`. Keep that library workflow initially.
-  Use explicit Wagtail constraints for compatibility jobs.
+  Use explicit Wagtail constraints if compatibility jobs are added later.
 - It has npm/Vitest tests but no frontend build pipeline. Add TypeScript, Vite,
   a committed npm lockfile, and browser tests here.
-- Its CI tests one Python environment. This package needs a Wagtail compatibility
-  matrix and built-distribution checks.
+- Its CI tests one Python environment. Keep CI focused on the current verified
+  stack and add built-distribution checks. Broader compatibility jobs are deferred.
 - Do not copy its Draftail integration, placeholder metadata, or unrelated demo
   names. Use an early-development package classifier until release readiness is
   established.
@@ -387,6 +387,12 @@ This deliberately starts above the reference's Python 3.10 floor to keep the
 new package's baseline current. Final supported versions and classifiers must
 match passing CI, not this proposal. [Wagtail compatibility table](https://docs.wagtail.org/en/stable/releases/upgrading.html#compatible-django-python-versions)
 
+Updated scope after Phase 3: defer the multi-version Python/Django/Wagtail CI
+matrix. Phase 4 targets the locally verified Python 3.13, Wagtail 8.1, and Django
+6.1 stack. Evaluate newer versions as development moves forward; testing older
+combinations is not an initial release gate. Existing dependency bounds describe
+allowed installations, not verified compatibility across every combination.
+
 ## Frontend build and Python distribution
 
 Use Vite library mode to produce one self-contained classic/IIFE admin bundle
@@ -503,7 +509,8 @@ State exactly which external sources were tested and what remains unverified.
    merge/split, headers, range paste, multiple blocks, duplication, deletion,
    draft/publish, and published HTML assertions.
 2. Complete Python validation/rendering tests, shared fixtures, TypeScript checks,
-   accessibility review, and supported-version CI.
+   accessibility review, and CI for the current verified stack. Defer the broader
+   Python/Django/Wagtail compatibility matrix; evaluate newer versions as needed.
 3. Verify reproducible assets, license notices, wheel/sdist contents, and an
    independent installation with no Node requirement.
 4. Write the README for actual features: requirements, installation, realistic
@@ -516,7 +523,45 @@ At each implementation checkpoint run pytest, Ruff check/format, TypeScript
 checks, Vitest, the frontend build, and relevant demo/browser checks. Report
 unavailable checks explicitly and update this plan with evidence and open issues.
 
-### Phase 5 — Future hybrid cells; excluded from this implementation
+### Phase 5 — UX research and refinement
+
+Refine the text-table editing experience before investigating hybrid cells.
+This is a dedicated follow-up phase; it does not start hybrid-cell work or make
+every deferred refinement a requirement for the initial release. Fix obvious
+layout defects during Phase 4 if they obstruct normal use.
+
+1. Review the original PDF report and write a short prelude covering the original
+   motivation, needs that remain relevant, and how ProseMirror and Tiptap inform
+   today's approach. Treat the report as historical context, not a specification,
+   and verify any chronology claims. Store the research overview, findings, visual
+   comparisons, and decisions in `docs/research/table-editor-ux/` under version
+   control. Include curated screenshots with attribution, source links, and capture
+   dates; exclude raw captures, recordings, and temporary experiments. Include the
+   PDF only if suitable for public redistribution; otherwise link to it.
+2. Review the current editor in Wagtail with realistic small, wide, and merged
+   tables. Record layout problems, including misaligned buttons, and friction
+   during insertion, selection, row/column changes, alignment, and metadata editing.
+3. Research table-editing interactions in other products using their current
+   interfaces or documentation. Compare the same tasks and record useful patterns,
+   accessibility tradeoffs, and evidence. Borrow interaction ideas that fit Wagtail
+   and native Tiptap behavior; do not copy an entire interface.
+4. Propose a small set of changes for review. Explore controls nearer the table,
+   such as contextual toolbars or menus, without committing to a particular design.
+   Essential actions must remain discoverable and usable without right-click or
+   hover. Check selection preservation, keyboard access, and viewport boundaries.
+5. Prototype the chosen interactions in the existing demo using native Tiptap
+   commands and Wagtail styling. Review screenshots and browser interactions
+   before committing to a wider redesign. Prefer small, reversible changes.
+6. Implement the agreed refinements and verify keyboard and mouse workflows,
+   focus behavior, large-table handling, independent StreamField instances,
+   save/reload, and published output. Add browser coverage for changed behavior.
+
+Acceptance: consistent control alignment and grouping, clear available actions,
+and reviewed editing workflows for small and large tables. Context menus are an
+option to evaluate, not an acceptance requirement. Record remaining limitations
+and run the usual checks before closing this phase.
+
+### Phase 6 — Future hybrid cells; excluded from this implementation
 
 Revisit `cell_block` configuration and native Wagtail block definitions only after
 the text editor is stable. Investigate existing StreamField/Telepath conventions
@@ -527,10 +572,10 @@ stores, placeholder nodes, or a parallel block editing system in advance.
 
 ## Deferred refinements from editor feedback
 
-Recorded after Phase 2. These are retained for a later refinement pass; they do
-not change the current phase order or take priority over the clipboard baseline.
-Some relate to Phase 3's usability work, but recording them does not commit us
-to implementing them in that phase. Prefer native APIs and small changes.
+Recorded after Phase 2. These are candidates for Phase 5's UX review, alongside
+the later feedback about button alignment and contextual controls. Recording
+them does not commit us to implementing every item. Prefer native APIs and small
+changes; required-value validation remains a correctness concern for Phase 4.
 
 | Refinement | Current behavior | Follow-up |
 | --- | --- | --- |
@@ -681,8 +726,8 @@ Verification:
   passed without overwriting existing table content.
 
 Remaining work is in later phases: clipboard policies/interoperability,
-further usability and accessibility review, compatibility matrix validation,
-and publishing preparation. Complex header intent cannot always be recovered
+further usability and accessibility review, and publishing preparation. Broader
+compatibility matrix validation is now deferred. Complex header intent cannot always be recovered
 from geometry; there is no manual association UI. Stable cell IDs and hybrid
 Wagtail block cells remain deferred. Phase 3 was subsequently approved.
 

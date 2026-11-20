@@ -20,9 +20,11 @@ or Node.js is required by the installed Python package.
 
 ## Development
 
-Python 3.11+, Wagtail 7.4–8.1, and Node 22.15+ are the initial targets.
-The compatibility matrix will be expanded and verified before a stable release.
 Local checks currently pass on Python 3.13, Wagtail 8.1, and Django 6.1.
+Use Node 22.15+ for frontend development. CI will target the current verified
+stack, with newer versions evaluated as development moves forward. A broader
+compatibility matrix is deferred; other versions allowed by the package's
+dependency bounds have not yet been verified.
 
 ```sh
 make install
