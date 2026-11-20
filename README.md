@@ -3,6 +3,12 @@
 A native Tiptap table editor for Wagtail StreamField. This early alpha provides
 native text-table editing, JSON persistence, and safe server-side rendering.
 
+Version `0.1.0a1` is experimental and intended for evaluation. Public APIs and
+stored data may change before a stable release; automatic migrations between
+alpha versions are not promised. Back up content before upgrading. Hybrid
+Wagtail block cells are planned, not implemented. A full accessibility review
+and real external-application clipboard checks remain outstanding.
+
 ```python
 from wagtail import blocks
 from wagtail_table.blocks import TableBlock
@@ -13,7 +19,13 @@ class ContentBlock(blocks.StreamBlock):
     table = TableBlock()
 ```
 
-Install with `pip install wagtail-table` and add `"wagtail_table"` to
+Install the alpha once published:
+
+```sh
+pip install wagtail-table==0.1.0a1
+```
+
+Add `"wagtail_table"` to
 `INSTALLED_APPS`. Use `ContentBlock()` in a normal StreamField and FieldPanel.
 Render with Wagtail's `{% include_block page.body %}`. No frontend JavaScript
 or Node.js is required by the installed Python package.
@@ -32,6 +44,7 @@ make build
 make test
 npx playwright install chromium
 make test-browser
+make check-distribution
 ```
 
 All eight Playwright tests passed in a local run outside the development sandbox,
@@ -66,7 +79,7 @@ step during Python installation.
 ## Current scope
 
 The editor uses native table nodes and stores one table per block in versioned
-JSON. Phases 1 and 2 are complete. Current features include:
+JSON. Current features include:
 
 - Native row/column insertion and deletion, rectangular cell selection, merge,
   split, undo, and redo, exposed through compact controls.
@@ -90,7 +103,7 @@ custom layout when individual or merged cells no longer match the edge settings;
 changing an edge toggle does not reset unrelated individual headers.
 
 Phase 3 clipboard implementation and automated verification are complete;
-see [paste behavior, coverage, and manual checks](docs/clipboard.md).
+see [paste behavior, coverage, and manual checks](https://github.com/allcaps/wagtail-table/blob/main/docs/clipboard.md).
 HTML tables and tab-separated ranges use native ProseMirror insertion and table
 manipulation. At a text cursor, a range can grow the table; a selected rectangle
 clips or repeats the source. Visible help and notices explain this distinction
@@ -130,7 +143,14 @@ No public JavaScript is needed.
 
 ## Releases
 
-Release automation is planned for Phase 4. Until then, run all checks and browser
-tests, rebuild assets, and inspect `uv build` artifacts before any manual release.
-Version numbers live in `pyproject.toml`. The project uses BSD-3-Clause; bundled
-dependency license texts ship alongside the generated admin assets.
+See the [release checklist](https://github.com/allcaps/wagtail-table/blob/main/docs/releases.md)
+and [changelog](https://github.com/allcaps/wagtail-table/blob/main/CHANGELOG.md).
+Version numbers live in `pyproject.toml`; matching `v*` tags trigger verification
+and PyPI Trusted Publishing through the GitHub `pypi` environment.
+`make check-distribution` checks wheel/sdist contents, rebuilds from the sdist,
+and installs and renders the package in an isolated environment with Node/npm
+unavailable. It requires uv and the installed test dependencies and replaces
+old wheel/sdist files in `dist/` only after all checks pass.
+
+The project uses BSD-3-Clause; bundled dependency license texts ship alongside
+the generated admin assets.

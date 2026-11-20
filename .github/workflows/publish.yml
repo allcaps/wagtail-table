@@ -1,0 +1,71 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.15.0'
+          cache: npm
+      - name: Verify release tag
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
+          if os.environ['GITHUB_REF_NAME'] != f'v{version}':
+              raise SystemExit('Release tag must match the version in pyproject.toml')
+          PY
+      - run: make install
+      - run: make test
+      - run: npx playwright install --with-deps chromium
+      - run: make test-browser
+      - run: make check-distribution
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-results
+          path: test-results/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/wagtail-table/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: distributions
+          path: dist
+      - run: uv publish --trusted-publishing always

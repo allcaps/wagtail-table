@@ -1,7 +1,8 @@
 # wagtail-table implementation plan
 
 Status: Phases 0–2 complete. Phase 3 implementation and automated verification
-complete; external-source manual checks pending. Phases 4–6 have not started.
+complete; external-source manual checks pending. Phase 4's focused alpha release
+checkpoint is in progress; Phase 4 is not complete. Phases 5–6 have not started.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -797,3 +798,52 @@ Outstanding verification:
 - Perform and record external-application manual checks separately. Excel,
   Sheets, Word, and a specific website's clipboard output remain unverified.
 - The deferred refinements remain deferred. Phase 4 has not started.
+
+## Phase 4 — Focused alpha release checkpoint
+
+Scope: prepare `0.1.0a1` for evaluation without completing the full Phase 4
+review. UX research/refinement and hybrid cells remain in Phases 5 and 6.
+
+Prepared:
+
+- Added repository, issue-tracker, and changelog metadata for
+  `allcaps/wagtail-table`. Kept the alpha version, dependency bounds, and Alpha
+  classifier; no runtime dependencies or editor behavior changed.
+- Added alpha notes and explicit warnings about API/storage changes, migration
+  expectations, unverified clipboard sources, and incomplete accessibility and
+  compatibility review. Documented alpha installation and release steps.
+- Added `make check-distribution`: wheel/sdist content and metadata checks,
+  sdist-to-wheel rebuild, and fresh installed-package import/staticfile/rendering
+  checks outside the checkout with Node/npm unavailable. CI now runs this check.
+- Added tag-triggered publishing with version matching, full tests and browser
+  checks, verified artifact transfer, and a separate Trusted Publishing job in
+  the `pypi` environment. Only the publishing job receives OIDC permission.
+- Documented the exact pending PyPI publisher fields, GitHub environment setup,
+  and the review/tag/publish sequence in `docs/releases.md`.
+
+Verification on 20 November 2026:
+
+- `make test` passed: 73 Python tests, 17 TypeScript tests, Django checks,
+  Ruff (including release scripts), template lint/format, TypeScript type checks,
+  and reproducible frontend assets.
+- `make test-browser` could not start its server because of the sandbox's local
+  server restriction. The earlier user-run eight-test result is recorded above;
+  this release's CI must run the suite again.
+- The default `make check-distribution` path is blocked by PyPI network access.
+  An offline attempt confirms that the writable cache lacks build requirements
+  and Wagtail wheels; a complete fresh installation has not been verified here.
+- Using the installed build backend, wheel/sdist builds, artifact contents and
+  metadata checks, and rebuilding the wheel from the sdist passed with Node/npm
+  unavailable. An incorrect release version was rejected by the metadata check.
+- A supplementary installed-wheel check passed outside the checkout with
+  Node/npm unavailable: package imports, static assets, validation, and escaped
+  template rendering. It reused existing dependencies, so it does not replace
+  the fresh dependency installation gate.
+- Both workflow YAML files parsed successfully. The GitHub publishing workflow
+  has not run; no tag or upload has been made.
+
+Remaining before publication: review and commit the changes, configure the
+GitHub `pypi` environment and pending PyPI publisher, obtain green CI including
+browser and full distribution checks, date the release notes, and review the
+release artifacts. Publication remains a separate final action. Broader Phase 4
+quality work and the compatibility matrix remain outside this alpha checkpoint.
