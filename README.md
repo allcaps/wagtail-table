@@ -47,7 +47,7 @@ make test-browser
 make check-distribution
 ```
 
-All eight Playwright tests passed in a local run outside the development sandbox,
+The original eight Playwright tests passed in a local run outside the development sandbox,
 including real browser Clipboard API paste, native editing, and save/publish
 journeys. Backend draft/publish round trips are covered by pytest. The sandbox
 itself blocks the local server and browser process.
@@ -81,8 +81,15 @@ step during Python installation.
 The editor uses native table nodes and stores one table per block in versioned
 JSON. Current features include:
 
+- New blocks start with a blank 3×3 table and a header row. Insert table appears
+  only when the editor contains no table, including after selecting and deleting
+  the table. Saved empty drafts stay empty when reopened. Typing into an empty
+  editor can create a native 1×1 table; Insert table creates the usual 3×3 table.
 - Native row/column insertion and deletion, rectangular cell selection, merge,
   split, undo, and redo, exposed through compact controls.
+- Persistent Table actions and Table settings toolbar buttons toggle separate
+  panels below the toolbar. Open panels highlight their buttons; Enter and Space
+  toggle a focused button. Opening either panel closes the other.
 - Independent First row headers and First column headers toggles: turn both off
   for no edge headers, or both on for row and column headers. Header cell toggles
   the selected cells individually. The actual native cells determine the control
@@ -100,7 +107,8 @@ Merging retains the top-left cell's type and alignment and combines native cell
 content. Splitting retains the content in the first cell. Header types inherited
 after structural edits are native Tiptap/ProseMirror behavior. The UI reports a
 custom layout when individual or merged cells no longer match the edge settings;
-changing an edge toggle does not reset unrelated individual headers.
+each edge button still highlights when its entire first row or column contains
+headers. Changing an edge toggle does not reset unrelated individual headers.
 
 Phase 3 clipboard implementation and automated verification are complete;
 see [paste behavior, coverage, and manual checks](https://github.com/allcaps/wagtail-table/blob/main/docs/clipboard.md).
@@ -110,8 +118,14 @@ clips or repeats the source. Visible help and notices explain this distinction
 and merged-cell changes. Unsupported table structures are rejected without
 clearing existing cells. The schema prevents nested or unrelated root content.
 Unsupported document content must be corrected before saving; it is never
-silently discarded. External application clipboard compatibility has not yet
-been verified.
+silently discarded. Text-only documents, multiple tables, and any paragraphs
+before or after the table are invalid, even when saving a draft.
+
+TableBlock is required by default: Wagtail permits a missing table in an
+incomplete draft but prevents publishing until a table is present. A table with
+blank cells is valid. Use `TableBlock(required=False)` to permit an absent table
+on publication. This uses Wagtail's existing required-field validation.
+External application clipboard compatibility has not yet been verified.
 Malformed or unsupported saved values are retained read only; a repair UI is
 not implemented.
 

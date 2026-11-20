@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Start new blocks with a 3×3 table and show Insert table only in empty editors.
+  Preserve empty drafts and use native Wagtail required-field validation when
+  publishing. Reject any document content outside the single table.
+- Keep Table actions and Table settings buttons visible above their panels;
+  opening either panel closes the other. Use compact form controls and keep
+  merge, split, and header-cell actions together on one row.
+- Keep first-row/column header highlights accurate in custom header layouts.
+
 ## 0.1.0a1 — 2026-11-20
 
 First public alpha of the native Tiptap table editor for Wagtail StreamField.

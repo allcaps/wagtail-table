@@ -11,6 +11,32 @@ def test_invalid_wrappers(value):
         validate_value(value)
 
 
+@pytest.mark.parametrize("layout", ["text-only", "before", "after", "two-tables"])
+def test_documents_cannot_smuggle_content_outside_the_table(table_value, layout):
+    paragraph = {
+        "type": "paragraph",
+        "content": [{"type": "text", "text": "Outside"}],
+    }
+    table = table_value["table"]
+    contents = {
+        "text-only": [paragraph],
+        "before": [paragraph, table],
+        "after": [table, paragraph],
+        "two-tables": [table, table],
+    }
+    document = {"type": "doc", "content": contents[layout]}
+    for value in (
+        document,
+        {"version": 1, "document": document},
+        {**table_value, "table": document},
+        {**table_value, "content": contents[layout]},
+    ):
+        with pytest.raises(ValidationError):
+            validate_value(value)
+        with pytest.raises(ValidationError):
+            TableBlock(required=False).clean(value)
+
+
 @pytest.mark.parametrize("node_type", ["script", "image", "table", [], None])
 def test_unsupported_cell_content(table_value, node_type):
     table_value["table"]["content"][0]["content"][0]["content"][0]["type"] = node_type

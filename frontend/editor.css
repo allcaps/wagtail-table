@@ -1,13 +1,14 @@
 @import './public/table-public.css';
 .wagtail-table [data-table-toolbar] { margin-bottom: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: start; }
-.wagtail-table details { border: 1px solid var(--w-color-border-field-default, #aaa); border-radius: 3px; padding: 0.4rem; }
-.wagtail-table summary { cursor: pointer; font-weight: 600; }
-.wagtail-table details[open] { flex-basis: 100%; }
-.wagtail-table details[open] summary { margin-bottom: 0.5rem; }
-.wagtail-table details .button { margin: 0.25rem; }
-.wagtail-table details label { display: block; margin-top: 0.5rem; }
-.wagtail-table details :is(input, textarea, select) { width: 100%; max-width: 32rem; }
-.wagtail-table .button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px currentColor; }
+.wagtail-table [data-table-panel] { border: 1px solid var(--w-color-border-field-default, #aaa); border-radius: 3px; padding: 0.4rem; margin-bottom: 0.5rem; }
+.wagtail-table [data-table-panel] .button { margin: 0.25rem; }
+.wagtail-table [data-table-cell-actions] { display: flex; gap: 0.5rem; margin-top: 0.5rem; overflow-x: auto; }
+.wagtail-table [data-table-cell-actions] .button { flex: none; margin: 0; }
+.wagtail-table [data-table-panel] label { display: block; margin-top: 0.5rem; }
+.wagtail-table [data-table-panel] :is(input, textarea, select) { font-size: 0.875rem; line-height: 1.5; min-height: 2rem; padding: 0.25rem 0.75rem; max-width: 100%; }
+.wagtail-table [data-table-panel] :is(input, textarea) { width: 100%; max-width: 32rem; }
+.wagtail-table [data-table-panel] select { width: auto; padding-inline-end: 2rem; background-position-y: 50%; }
+.wagtail-table .button:is([aria-pressed="true"], [aria-expanded="true"]) { box-shadow: inset 0 0 0 2px currentColor; }
 .wagtail-table [hidden] { display: none !important; }
 .wagtail-table [data-table-editor] { overflow-x: auto; }
 .wagtail-table .tiptap { padding: 0.5rem; min-height: 3rem; }

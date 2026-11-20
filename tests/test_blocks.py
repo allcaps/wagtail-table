@@ -9,10 +9,43 @@ from wagtail_table.blocks import TableBlock
 
 def test_default_and_required():
     block = TableBlock()
-    assert block.get_default() is None
+    value = block.get_default()
+    assert block.clean(value) == value
+    assert value["version"] == 1
+    assert value["caption"] == value["description"] == ""
+    rows = value["table"]["content"]
+    assert len(rows) == 3
+    for index, row in enumerate(rows):
+        assert len(row["content"]) == 3
+        assert {cell["type"] for cell in row["content"]} == {
+            "tableHeader" if index == 0 else "tableCell"
+        }
+        assert all(
+            cell["content"] == [{"type": "paragraph"}] for cell in row["content"]
+        )
     with pytest.raises(ValidationError):
         block.clean(None)
     assert TableBlock(required=False).clean(None) is None
+
+
+def test_starter_tables_have_independent_cells_and_values():
+    block = TableBlock()
+    first = block.get_default()
+    first["table"]["content"][1]["content"][0]["content"][0]["content"] = [
+        {"type": "text", "text": "Independent"}
+    ]
+    assert first != block.get_default()
+    assert first != TableBlock().get_default()
+    assert first["table"]["content"][1]["content"][1]["content"] == [
+        {"type": "paragraph"}
+    ]
+
+
+def test_custom_default_and_empty_saved_values_are_preserved(table_value):
+    assert TableBlock(default=table_value).get_default() == table_value
+    assert TableBlock(default=None).get_default() is None
+    assert TableBlock().get_form_state(None) is None
+    assert TableBlock().to_python(None) is None
 
 
 def test_value_and_form_round_trips(table_value):

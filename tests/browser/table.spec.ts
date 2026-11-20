@@ -1,5 +1,62 @@
 import { expect, test } from '@playwright/test';
 
+test('starter tables save immediately; deleted tables remain empty drafts until restored', async ({ page }) => {
+  await page.goto('/admin/login/');
+  await page.locator('input[name="username"]').fill('editor');
+  await page.locator('input[name="password"]').fill('table-test-password');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page).toHaveURL(/\/admin\/$/);
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Add a demo page' }).click();
+  await page.locator('input[name="title"]').fill('Starter table');
+  await page.getByTitle('Insert a block', { exact: true }).click();
+  await page.getByRole('option', { name: 'Table', exact: true }).click();
+  const widget = page.locator('[data-wagtail-table]');
+  const insert = widget.getByRole('button', { name: 'Insert table', exact: true });
+  await expect(widget.locator('tr')).toHaveCount(3);
+  await expect(widget.locator('th, td')).toHaveCount(9);
+  await expect(insert).toBeHidden();
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await page.reload();
+  await expect(widget.locator('th, td')).toHaveCount(9);
+  await expect(insert).toBeHidden();
+
+  await widget.locator('th p').first().click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.press('Backspace');
+  await expect(widget.locator('table')).toHaveCount(0);
+  await expect(insert).toBeVisible();
+  await expect(widget.locator('input[type="hidden"]')).toHaveValue('null');
+  await widget.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(widget.locator('th, td')).toHaveCount(9);
+  await expect(insert).toBeHidden();
+  await widget.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect(widget.locator('table')).toHaveCount(0);
+  await expect(insert).toBeVisible();
+
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await page.reload();
+  await expect(widget.locator('table')).toHaveCount(0);
+  await expect(insert).toBeVisible();
+  await page.getByRole('navigation', { name: 'Actions (footer)' })
+    .getByRole('button', { name: 'More actions', exact: true }).click();
+  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await expect(page.getByText('This field is required.', { exact: true })).toBeVisible();
+  await expect(widget.locator('table')).toHaveCount(0);
+  await expect(insert).toBeVisible();
+
+  await insert.click();
+  await expect(widget.locator('th, td')).toHaveCount(9);
+  await expect(insert).toBeHidden();
+  await page.getByRole('navigation', { name: 'Actions (footer)' })
+    .getByRole('button', { name: 'More actions', exact: true }).click();
+  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await page.goto('/starter-table/');
+  await expect(page.locator('table')).toHaveCount(1);
+  await expect(page.locator('th')).toHaveCount(3);
+  await expect(page.locator('td')).toHaveCount(6);
+});
+
 test('create, duplicate, save, reload, and publish independent native tables', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -14,7 +71,9 @@ test('create, duplicate, save, reload, and publish independent native tables', a
   await page.getByTitle('Insert a block', { exact: true }).click();
   await page.getByRole('option', { name: 'Table', exact: true }).click();
   const widgets = page.locator('[data-wagtail-table]');
-  await widgets.first().getByRole('button', { name: 'Insert table' }).click();
+  await expect(widgets.first().locator('tr')).toHaveCount(3);
+  await expect(widgets.first().locator('th, td')).toHaveCount(9);
+  await expect(widgets.first().getByRole('button', { name: 'Insert table' })).toBeHidden();
   const cells = widgets.first().locator('th, td');
   await cells.first().locator('p').fill('Original');
   await cells.nth(3).locator('p').fill('Saved immediately');

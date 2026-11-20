@@ -19,6 +19,31 @@ CHILD_TYPES = {
 }
 
 
+def default_table_value():
+    """Return a fresh starter table matching Tiptap's default 3×3 insertion."""
+    return {
+        "version": 1,
+        "table": {
+            "type": "table",
+            "content": [
+                {
+                    "type": "tableRow",
+                    "content": [
+                        {
+                            "type": "tableHeader" if row == 0 else "tableCell",
+                            "content": [{"type": "paragraph"}],
+                        }
+                        for _ in range(3)
+                    ],
+                }
+                for row in range(3)
+            ],
+        },
+        "caption": "",
+        "description": "",
+    }
+
+
 def validate_value(value):
     """Reject unsupported data rather than silently dropping content on save."""
     if value is None:

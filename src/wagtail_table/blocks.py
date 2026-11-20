@@ -7,7 +7,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from wagtail.blocks import FieldBlock
 
-from .data import MAX_JSON_LENGTH, validate_value
+from .data import MAX_JSON_LENGTH, default_table_value, validate_value
 from .rendering import table_context
 from .widgets import TableInput
 
@@ -88,4 +88,4 @@ class TableBlock(FieldBlock):
     class Meta:
         icon = "table"
         template = "wagtail_table/table.html"
-        default = None
+        default = staticmethod(default_table_value)

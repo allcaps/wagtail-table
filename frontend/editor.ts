@@ -36,13 +36,11 @@ export function createEditor(
   });
 }
 
-// An empty paragraph may be created by native insertion/navigation. It carries
-// no saved content. Anything else outside the single table must remain visible
-// and produce a validation error instead of being silently discarded.
+// Only a genuinely empty document may become an empty draft. Never discard
+// outside nodes, even empty paragraphs, to extract an apparently valid table.
 export function tableValue(doc: JSONContent, previous: Pick<TableValue, 'caption' | 'description'> | null): TableValue | null {
-  const content = (doc.content ?? []).filter(
-    node => !(node.type === 'paragraph' && !node.content?.length),
-  );
+  if (doc.type !== 'doc') throw new Error('Expected a table document.');
+  const content = doc.content ?? [];
   if (!content.length) return null;
   if (content.length !== 1 || content[0].type !== 'table') {
     throw new Error('Only one table can be saved.');
@@ -56,6 +54,17 @@ export function tableValue(doc: JSONContent, previous: Pick<TableValue, 'caption
 }
 
 export type HeaderConfiguration = 'none' | 'row' | 'column' | 'both' | 'custom';
+
+// Match the edge cells inspected by ProseMirror's native header toggles.
+// Interior headers do not change whether the first row or column is enabled.
+export function headerEdges(table: ProseMirrorNode) {
+  const map = TableMap.get(table);
+  const isHeader = (position: number) => table.nodeAt(position)?.type.name === 'tableHeader';
+  return {
+    row: map.cellsInRect({ left: 0, top: 0, right: map.width, bottom: 1 }).every(isHeader),
+    column: map.cellsInRect({ left: 0, top: 0, right: 1, bottom: map.height }).every(isHeader),
+  };
+}
 
 // Read ProseMirror's logical grid so merged cells and structural edits are
 // reflected in the UI. There is no separately stored header-mode flag.

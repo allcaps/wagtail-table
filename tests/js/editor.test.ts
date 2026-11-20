@@ -7,7 +7,7 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import { TableKit } from '@tiptap/extension-table';
 import { VerticalAlignment } from '../../frontend/alignment';
-import { headerConfiguration } from '../../frontend/editor';
+import { headerConfiguration, headerEdges } from '../../frontend/editor';
 
 describe('the one-table persistence boundary', () => {
   it('wraps a native table without changing its content', () => {
@@ -19,21 +19,25 @@ describe('the one-table persistence boundary', () => {
     expect(tableValue({ type: 'doc', content: [basic.table] }, previous)).toEqual(previous);
   });
 
-  it('ignores only empty top-level paragraphs', () => {
-    expect(tableValue({ type: 'doc', content: [
-      { type: 'paragraph' }, basic.table, { type: 'paragraph' },
-    ] }, null)).toEqual(basic);
-    expect(tableValue({ type: 'doc', content: [{ type: 'paragraph' }] }, null)).toBeNull();
+  it('allows only a genuinely empty document as an incomplete draft', () => {
+    expect(tableValue({ type: 'doc', content: [] }, null)).toBeNull();
+    expect(tableValue({ type: 'doc' }, null)).toBeNull();
+    expect(() => tableValue({ type: 'paragraph' }, null)).toThrow();
   });
 
   it('rejects additional tables rather than dropping them', () => {
     expect(() => tableValue({ type: 'doc', content: [basic.table, basic.table] }, null)).toThrow();
   });
 
-  it('rejects outside text rather than dropping it', () => {
-    expect(() => tableValue({ type: 'doc', content: [basic.table,
+  it('rejects text-only documents and any paragraphs before or after a table', () => {
+    for (const outside of [
       { type: 'paragraph', content: [{ type: 'text', text: 'Keep this' }] },
-    ] }, null)).toThrow();
+      { type: 'paragraph' },
+    ]) {
+      for (const content of [[outside], [outside, basic.table], [basic.table, outside]]) {
+        expect(() => tableValue({ type: 'doc', content }, null)).toThrow();
+      }
+    }
   });
 });
 
@@ -49,6 +53,10 @@ describe('header settings derived from native table nodes', () => {
         cell.type = header ? 'tableHeader' : 'tableCell';
       }));
       expect(headerConfiguration(schema.nodeFromJSON(table))).toBe(mode);
+      expect(headerEdges(schema.nodeFromJSON(table))).toEqual({
+        row: mode === 'row' || mode === 'both',
+        column: mode === 'column' || mode === 'both',
+      });
     }
   });
 
@@ -56,6 +64,11 @@ describe('header settings derived from native table nodes', () => {
     const table = structuredClone(basic.table);
     table.content[1].content[1].type = 'tableHeader';
     expect(headerConfiguration(schema.nodeFromJSON(table))).toBe('custom');
+    expect(headerEdges(schema.nodeFromJSON(table))).toEqual({ row: true, column: false });
+    table.content[1].content[0].type = 'tableHeader';
+    expect(headerEdges(schema.nodeFromJSON(table))).toEqual({ row: true, column: true });
+    table.content[0].content[1].type = 'tableCell';
+    expect(headerEdges(schema.nodeFromJSON(table))).toEqual({ row: false, column: true });
   });
 
   it('uses logical columns when a header is merged', () => {
@@ -63,6 +76,7 @@ describe('header settings derived from native table nodes', () => {
     table.content[0].content = [table.content[0].content[0]];
     table.content[0].content[0].attrs = { colspan: 2 };
     expect(headerConfiguration(schema.nodeFromJSON(table))).toBe('row');
+    expect(headerEdges(schema.nodeFromJSON(table))).toEqual({ row: true, column: false });
   });
 
   it('registers vertical alignment on both native cell types', () => {

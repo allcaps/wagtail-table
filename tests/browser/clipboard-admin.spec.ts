@@ -14,7 +14,7 @@ test('real clipboard TSV and HTML paste survive draft reload and publication', a
   await page.getByRole('option', { name: 'Table', exact: true }).click();
   const widgets = page.locator('[data-wagtail-table]');
   const widget = widgets.first();
-  await widget.getByRole('button', { name: 'Insert table', exact: true }).click();
+  await expect(widget.locator('tr')).toHaveCount(3);
   await widget.locator('th p').first().click();
   await page.evaluate(() => navigator.clipboard.writeText('Product\tCount\nApples\t4\nPears\t9'));
   await page.keyboard.press('ControlOrMeta+V');
@@ -22,7 +22,7 @@ test('real clipboard TSV and HTML paste survive draft reload and publication', a
   await page.getByTitle('Insert a block', { exact: true }).last().click();
   await page.getByRole('option', { name: 'Table', exact: true }).click();
   const htmlWidget = widgets.nth(1);
-  await htmlWidget.locator('.tiptap').click();
+  await htmlWidget.locator('th p').first().click();
   await page.evaluate(() => navigator.clipboard.write([new ClipboardItem({
     'text/html': new Blob(['<table><tr><th colspan="2">Notes</th></tr><tr><td>Fresh<br>green</td><td>5</td></tr></table>'], { type: 'text/html' }),
     'text/plain': new Blob(['Notes\nFresh green\t5'], { type: 'text/plain' }),

@@ -14,7 +14,7 @@ test('native table operations, headers, alignment, and metadata survive publishi
   await page.getByTitle('Insert a block', { exact: true }).click();
   await page.getByRole('option', { name: 'Table', exact: true }).click();
   const widget = page.locator('[data-wagtail-table]');
-  await widget.getByRole('button', { name: 'Insert table', exact: true }).click();
+  await expect(widget.locator('tr')).toHaveCount(3);
   const cells = widget.locator('th, td');
   await cells.nth(4).locator('p').fill('Keep this');
   await widget.getByText('Table actions', { exact: true }).click();
@@ -36,7 +36,7 @@ test('native table operations, headers, alignment, and metadata survive publishi
   await page.keyboard.press('Tab');
   await page.keyboard.type('Aligned');
   await page.keyboard.press('Escape');
-  await expect(widget.locator('[data-table-actions] summary')).toBeFocused();
+  await expect(widget.getByRole('button', { name: 'Table actions', exact: true })).toBeFocused();
   await widget.getByText('Table settings', { exact: true }).click();
   await widget.getByRole('button', { name: 'First column headers', exact: true }).click();
   await expect(widget.getByRole('button', { name: 'First row headers', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -47,6 +47,7 @@ test('native table operations, headers, alignment, and metadata survive publishi
   await widget.getByLabel('Description', { exact: true }).fill('Each row lists one product.');
 
   // Shift-click selects a native rectangle; our merge button preserves it.
+  await widget.getByRole('button', { name: 'Table actions', exact: true }).click();
   const dataRow = widget.locator('tr').nth(2);
   await dataRow.locator('td').first().click();
   await dataRow.locator('td').last().click({ modifiers: ['Shift'] });

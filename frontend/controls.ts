@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/core';
-import { headerConfiguration, type TableValue } from './editor';
+import { headerConfiguration, headerEdges, type TableValue } from './editor';
 
 export type Strings = Record<string, string>;
 type Command = 'insertTable' | 'undo' | 'redo' | 'addRowBefore' | 'addRowAfter'
@@ -12,8 +12,10 @@ export class TableControls {
   private editor?: Editor;
   private buttons = new Map<Command, HTMLButtonElement>();
   private actions: HTMLSelectElement[] = [];
-  private settings: HTMLDetailsElement;
-  private structure: HTMLDetailsElement;
+  private settings: HTMLDivElement;
+  private structure: HTMLDivElement;
+  private settingsButton: HTMLButtonElement;
+  private structureButton: HTMLButtonElement;
   private horizontal: HTMLSelectElement;
   private vertical: HTMLSelectElement;
   private warning: HTMLElement;
@@ -27,29 +29,28 @@ export class TableControls {
       ['insertTable', 'Insert table'], ['undo', 'Undo'], ['redo', 'Redo'],
     ] as const) this.addButton(toolbar, command, label);
 
-    this.structure = document.createElement('details');
+    const actions = this.addPanel(root, toolbar, 'actions', 'Table actions');
+    this.structure = actions.panel;
+    this.structureButton = actions.button;
     this.structure.dataset.tableActions = '';
-    const summary = document.createElement('summary');
-    summary.textContent = strings.actions ?? 'Table actions';
-    this.structure.append(summary);
-    toolbar.append(this.structure);
     this.actions.push(this.addSelect(this.structure, 'rows', 'Rows', [
       ['addRowBefore', 'Add row before'], ['addRowAfter', 'Add row after'], ['deleteRow', 'Delete row'],
     ], value => this.run(value as Command)));
     this.actions.push(this.addSelect(this.structure, 'columns', 'Columns', [
       ['addColumnBefore', 'Add column before'], ['addColumnAfter', 'Add column after'], ['deleteColumn', 'Delete column'],
     ], value => this.run(value as Command)));
+    const cellActions = document.createElement('div');
+    cellActions.dataset.tableCellActions = '';
+    this.structure.append(cellActions);
     for (const [command, label] of [
       ['mergeCells', 'Merge cells'], ['splitCell', 'Split cell'],
       ['toggleHeaderCell', 'Header cell'],
-    ] as const) this.addButton(this.structure, command, label);
+    ] as const) this.addButton(cellActions, command, label);
 
-    this.settings = document.createElement('details');
+    const settings = this.addPanel(root, toolbar, 'settings', 'Table settings');
+    this.settings = settings.panel;
+    this.settingsButton = settings.button;
     this.settings.dataset.tableSettings = '';
-    const settingsSummary = document.createElement('summary');
-    settingsSummary.textContent = strings.settings ?? 'Table settings';
-    this.settings.append(settingsSummary);
-    toolbar.append(this.settings);
     this.addButton(this.settings, 'toggleHeaderRow', 'First row headers');
     this.addButton(this.settings, 'toggleHeaderColumn', 'First column headers');
     this.warning = document.createElement('p');
@@ -85,6 +86,31 @@ export class TableControls {
     this.settings.append(captionLabel, this.caption, descriptionLabel, this.description, help);
     this.caption.addEventListener('input', onMetadata, { signal });
     this.description.addEventListener('input', onMetadata, { signal });
+  }
+
+  private addPanel(root: HTMLElement, toolbar: HTMLElement, key: string, fallback: string) {
+    const panel = document.createElement('div');
+    panel.id = `${this.id}-${key}-panel`;
+    panel.dataset.tablePanel = '';
+    panel.hidden = true;
+    root.querySelector('[data-table-editor]')!.before(panel);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'button button-small button-secondary';
+    button.textContent = this.strings[key] ?? fallback;
+    button.setAttribute('aria-controls', panel.id);
+    button.setAttribute('aria-expanded', 'false');
+    button.addEventListener('mousedown', event => event.preventDefault(), { signal: this.signal });
+    button.addEventListener('click', () => {
+      const opening = panel.hidden;
+      this.structure.hidden = this.settings.hidden = true;
+      this.structureButton.setAttribute('aria-expanded', 'false');
+      this.settingsButton.setAttribute('aria-expanded', 'false');
+      panel.hidden = !opening;
+      button.setAttribute('aria-expanded', String(opening));
+    }, { signal: this.signal });
+    toolbar.append(button);
+    return { panel, button };
   }
 
   private addButton(container: HTMLElement, command: Command, fallback: string) {
@@ -133,7 +159,7 @@ export class TableControls {
   }
 
   focus() {
-    if (!this.structure.hidden) this.structure.querySelector('summary')!.focus();
+    if (!this.structureButton.hidden) this.structureButton.focus();
     else this.buttons.get('insertTable')!.focus();
   }
 
@@ -144,13 +170,16 @@ export class TableControls {
     for (const [command, button] of this.buttons) {
       button.disabled = !editor || !editor.can()[command]() || (command === 'insertTable' && !!table);
     }
-    this.structure.hidden = !table;
-    this.settings.hidden = !table;
+    this.buttons.get('insertTable')!.hidden = !!table;
+    this.structureButton.hidden = this.settingsButton.hidden = !table;
+    this.structure.hidden = !table || this.structureButton.getAttribute('aria-expanded') !== 'true';
+    this.settings.hidden = !table || this.settingsButton.getAttribute('aria-expanded') !== 'true';
     for (const select of [...this.actions, this.horizontal, this.vertical]) select.disabled = !inTable;
     this.caption.disabled = this.description.disabled = !table;
     const mode = table ? headerConfiguration(table) : 'none';
-    this.buttons.get('toggleHeaderRow')!.setAttribute('aria-pressed', String(mode === 'row' || mode === 'both'));
-    this.buttons.get('toggleHeaderColumn')!.setAttribute('aria-pressed', String(mode === 'column' || mode === 'both'));
+    const headers = table ? headerEdges(table) : { row: false, column: false };
+    this.buttons.get('toggleHeaderRow')!.setAttribute('aria-pressed', String(headers.row));
+    this.buttons.get('toggleHeaderColumn')!.setAttribute('aria-pressed', String(headers.column));
     this.buttons.get('toggleHeaderCell')!.setAttribute('aria-pressed', String(!!editor?.isActive('tableHeader')));
     this.warning.hidden = mode !== 'custom';
     const attributes = editor?.getAttributes(editor.isActive('tableHeader') ? 'tableHeader' : 'tableCell');
