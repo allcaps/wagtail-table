@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0a1 — Unreleased
+## 0.1.0a1 — 2026-11-20
 
 First public alpha of the native Tiptap table editor for Wagtail StreamField.
 
