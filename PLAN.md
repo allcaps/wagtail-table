@@ -1,8 +1,9 @@
 # wagtail-table implementation plan
 
 Status: Phases 0–2 complete. Phase 3 implementation and automated verification
-complete; external-source manual checks pending. Phase 4's focused alpha release
-checkpoint is in progress; Phase 4 is not complete. Phases 5–6 have not started.
+complete; external-source manual checks pending. The user reports the Phase 4
+alpha publication succeeded; broader Phase 4 work remains. Phase 5 historical
+review has started; current-product UX research is pending. Phase 6 has not started.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -208,9 +209,11 @@ in a normal Tiptap `doc` when loading the editor and extract it when saving.
 Retain native span and supported alignment attributes as those features become
 available. Normalization may omit redundant default attributes consistently.
 
-An empty optional block is `null`; a required block must contain a table.
-Blank cells are valid, as in ordinary table editors. Insertion initially creates
-a small table using Tiptap's defaults. Each instance receives its own fresh value.
+An empty block is `null`; a required block must contain a table for publication.
+Wagtail's standard required-field deferral permits empty drafts. Blank cells are
+valid, as in ordinary table editors. New blocks receive a fresh 3×3 table with a
+header row through Wagtail's default mechanism. Existing empty values stay empty;
+the insertion control is available only while no table exists.
 
 The stock document schema can contain other top-level blocks. The integration
 must not silently extract one table and discard additional content. Phase 1
@@ -581,10 +584,10 @@ changes; required-value validation remains a correctness concern for Phase 4.
 | Refinement | Current behavior | Follow-up |
 | --- | --- | --- |
 | Alignment scope | Horizontal and vertical alignment apply to the current cell or native cell selection. | Add convenient Current cell / Current row / Current column actions. Investigate native row/column cell selections and apply the existing attribute commands, including sensible behavior around merged cells. |
-| Initial table size | Insert table uses Tiptap's default 3×3 size. | Allow choosing rows and columns before insertion. Evaluate simple numeric inputs or an accessible size picker; no particular widget design is chosen yet. Use the existing insertTable options. |
-| Insert control after insertion | Insert table stays visible but is disabled once a table exists. | Consider showing it only in the empty state, and restoring it when the table is removed, including through undo/redo. |
-| Empty required block | TableBlock defaults to required=True, and its unit test rejects an empty value when required validation runs. required=False permits an empty block. | Verify the actual Wagtail admin draft/publish paths: an inserted but empty required table block must prevent publishing and show a clear error. Confirm whether incomplete drafts remain allowed under Wagtail's deferred validation. This explicit empty-block publishing scenario is not covered by the current successful publish tests. |
-| Actions/settings design | Native details panels provide basic grouping and keyboard access. | Improve hierarchy, grouping, labels, control states, and focus behavior using Wagtail's design language. Review with real editing tasks before choosing a new layout. |
+| Initial table size | New blocks start with a 3×3 table and a header row. Recovery insertion also uses Tiptap's default 3×3 size. | Allow choosing rows and columns before insertion. Evaluate simple numeric inputs or an accessible size picker; no particular widget design is chosen yet. Use the existing insertTable options. |
+| Insert control after insertion | Insert table is hidden whenever a table exists, including on load, and restored when the editor becomes empty. | Implemented as a small refinement; keep this behavior during future insertion UX changes. |
+| Empty required block | Verified through admin POST tests: empty drafts save, publication requires a table, and an empty draft cannot replace a published table. required=False permits an empty block. Blank cells are valid. | Keep the native Wagtail validation behavior; run the added browser recovery/draft/publish journey locally or in CI. |
+| Actions/settings design | Persistent toolbar buttons toggle separate panels below the toolbar, with an open-state highlight and keyboard access. | Improve hierarchy, grouping, labels, control states, and focus behavior using Wagtail's design language. Review with real editing tasks before choosing a new layout. |
 | Large tables in the editor | The editor container has overflow-x: auto, but the table uses width: 100% and fixed layout inside Wagtail's content column. Existing scrolling alone does not establish that wide tables are comfortable to edit. | Test realistic wide/large tables and long cell content. Evaluate using more available width, preserving a readable minimum cell width with horizontal scrolling, or an expanded editing view. Verify keyboard navigation, focus visibility, multi-cell selection, and StreamField lifecycle behavior in the chosen approach. |
 
 Acceptance for a future refinement pass: retain native persistence and editing
@@ -847,3 +850,114 @@ GitHub `pypi` environment and pending PyPI publisher, obtain green CI including
 browser and full distribution checks, date the release notes, and review the
 release artifacts. Publication remains a separate final action. Broader Phase 4
 quality work and the compatibility matrix remain outside this alpha checkpoint.
+
+Subsequent update: the user reported successful PyPI publication and requested
+moving to UX discovery. This records publication success without claiming that
+the remaining Phase 4 review has been completed.
+
+## Phase 5 — Historical review started
+
+- Reviewed all 11 pages of the supplied original report, including its screenshots.
+  The PDF export metadata is dated 17 July 2024; authorship and the research date
+  are not established by that metadata.
+- Added the research overview and historical summary under
+  `docs/research/table-editor-ux/`, with three curated PDF page renders illustrating
+  per-cell configuration, nearby menus, and a properties dialog. The original PDF
+  is unchanged. Attribution and public redistribution details await clarification.
+- Preserved the report's historical TinyMCE recommendation separately from the
+  project's current Tiptap/ProseMirror implementation. No claim is made that those
+  frameworks first appeared after the report or that historical product findings
+  still describe today's software.
+- Recorded shared tasks and questions for the next research pass. Current-demo
+  captures, current-product comparisons, and UX prototypes have not started.
+- This step changes documentation only; it introduces no editor behavior changes
+  and makes no new browser-interaction claims.
+
+### Small refinement: persistent panel buttons
+
+At the user's request, replaced expandable headings with persistent Table actions
+and Table settings toolbar buttons and separate panels below them. A second click
+closes a panel; open buttons use the header buttons' inset highlight. Disclosure
+state uses `aria-expanded` and `aria-controls`. Both panels can remain open.
+Escape from the editor now focuses the Table actions button. No table data or
+Tiptap commands changed; bundled JS/CSS were rebuilt.
+
+`make test` passed (73 Python tests, 17 TypeScript tests, lint/format, type checks,
+and reproducible assets). A targeted connected-browser check passed for stable
+toolbar placement, visibility, highlights, second-click closing, Enter/Space
+activation, Escape focus, independent instances, and unchanged stored table data.
+Added a Playwright regression and updated the existing Escape assertion. The
+full Playwright suite could not start its server inside the sandbox and must be
+rerun locally or in CI; its new regression is not claimed as executed here.
+
+Follow-up refinements: first-row/column highlights now inspect their own logical
+edge cells independently of the overall header preset. Previously, any custom
+header layout cleared both highlights, even after enabling a complete header
+row or column. This was reproduced in the browser before the fix. The read-only
+state check uses native TableMap cells; native header commands remain unchanged.
+Merge cells, Split cell, and Header cell now share a dedicated flex row below the
+column selector, with horizontal overflow rather than wrapping on narrow screens.
+
+Extended unit coverage for edge state in ordinary, custom, and merged layouts.
+A connected-browser check passed at 320px editor width for the three buttons'
+shared line below Columns, custom header highlights, toggling, undo/redo, and
+restoring saved header state in another instance. `make test` passed after the
+header-state change; the subsequent layout change passed type checks, Vitest,
+and the frontend build. Playwright's widget-only run was also blocked by the
+sandbox's Chromium process restriction, before test bodies could execute.
+
+Compact form controls are the default for table editor panels. Inspection of the
+installed Wagtail CSS confirmed that its density setting does not resize these
+native fields. A scoped sizing override retains Wagtail's field colors, borders,
+focus and disabled styling while using 14px text, smaller padding, and a 32px
+minimum height. Selects fit their options rather than filling the panel; caption
+and description retain wider inputs. Select arrows remain vertically centered.
+No JavaScript widgets or dependencies were added.
+
+With the installed Wagtail core CSS loaded, a connected-browser check confirmed
+single-line fields decreased from about 44px to 32px, the two-row description
+from 99px to 52px, and selects fit within a 320px editor. Checked both directions
+and default/snug density; fields outside the editor kept their original size.
+Frontend build, type checking, asset reproducibility, and whitespace checks passed.
+
+Insert table now appears only while the editor is empty. It is hidden after
+insertion and when restoring an existing table, and returns if insertion is
+undone. A connected-browser check passed for empty, inserted, undo, redo, and
+saved-table initialization states. Build, type, asset, and whitespace checks passed.
+
+### Starter tables, strict persistence, and exclusive panels
+
+New TableBlocks now use a callable Wagtail block default that returns a fresh
+3×3 table with a header row. Explicit developer defaults remain supported, and
+saved empty or malformed values are not replaced with a starter table. Loading
+the default or an empty draft does not dispatch change events. Connected-browser
+checks confirmed independent instances and that the starter JSON normalizes to
+the same document as native Tiptap insertion.
+
+Required-field validation stays entirely with Wagtail. Admin POST tests verify
+empty draft creation, repeated draft saves, rejected empty publication, preserved
+published content, and publication of a blank starter table. Native select-all
+and Backspace removes the table; undo/redo and recovery insertion were checked
+in the connected browser. Ordinary typing into an empty editor creates a native
+1×1 table, which is valid; no custom typing interception has been added.
+
+The frontend persistence boundary no longer ignores empty outside paragraphs.
+Only a genuinely empty document becomes null; nonempty documents must contain
+exactly one table. The existing server wrapper validation already rejects
+outside nodes and document payloads. Additional tests cover text-only content,
+text before/after a table, multiple tables, and rejected malformed draft/publish
+POSTs while retaining the original invalid value.
+
+Table actions and Table settings are now mutually exclusive. Opening either
+closes the other and updates both highlights and aria-expanded states. Clicking
+the active control closes it. Browser tests were adjusted to switch panels
+before using their controls; a connected-browser mouse check passed for both
+switch directions, active highlights, second-click closing, independent table
+instances, and unchanged table data.
+
+Final `make test` passed: 88 Python tests, 17 TypeScript tests, Django system and
+migration checks, Ruff, template checks, TypeScript type checking, and reproducible
+frontend assets. The frontend was rebuilt. The full Playwright rerun remains
+blocked by the sandbox's server restriction; the updated journeys have not been
+claimed as executed here. The connected browser restarted before the latest
+keyboard switching check completed, so only its mouse result is recorded above.
