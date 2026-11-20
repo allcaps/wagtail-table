@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { tableValue, type TableValue } from '../../frontend/editor';
 import basic from '../fixtures/basic.json';
+import accessibilityExamples from '../fixtures/accessibility/wai-tables.json';
 import { getSchema } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
@@ -10,7 +11,18 @@ import { VerticalAlignment } from '../../frontend/alignment';
 import { headerConfiguration, headerEdges } from '../../frontend/editor';
 import { selectedCellAlignment } from '../../frontend/editor';
 import { EditorState, NodeSelection, TextSelection } from '@tiptap/pm/state';
-import { CellSelection } from '@tiptap/pm/tables';
+import { CellSelection, TableMap } from '@tiptap/pm/tables';
+
+describe('the WAI-inspired native fixtures', () => {
+  const schema = getSchema([Document, Paragraph, Text, TableKit, VerticalAlignment]);
+
+  it.each(accessibilityExamples)('restores $id as a valid native table', example => {
+    const doc = schema.nodeFromJSON({ type: 'doc', content: [example.value.table] });
+    doc.check();
+    expect(TableMap.get(doc.firstChild!).problems).toBeNull();
+    expect(tableValue(doc.toJSON(), example.value as TableValue)?.caption).toBe(example.value.caption);
+  });
+});
 
 describe('the one-table persistence boundary', () => {
   it('wraps a native table without changing its content', () => {

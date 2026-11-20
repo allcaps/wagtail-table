@@ -1113,3 +1113,28 @@ range, a merged cell, and the native multi-cell selection retained after splitti
 Build, type, and whitespace checks passed; connected-browser inspection confirmed
 disabled actions have reduced opacity and a neutral cursor. The updated full
 browser journey requires a local/CI run.
+
+### WAI-inspired accessibility fixtures
+
+Added 11 original native JSON documents under tests/fixtures/accessibility, with
+source links and project-authored motivations based on all six WAI table tutorial
+subpages. Cases cover first-row/column headers, both directions, offset headers,
+column and row spans, changing header bands, separate-table alternatives, caption
+versus summary, and separate numeric data with alignment. No WAI HTML snippets
+or example datasets are copied. The normal block and renderer handle all values.
+
+create_examples now adds /table-accessibility/ alongside /table-examples/ and
+preserves existing pages independently. Demo navigation links to example pages
+when present. Offset headers and changing bands are explicitly labelled renderer
+limitations: editing their native cells is supported, but their intended published
+header relationships cannot currently be inferred. Spanning edge headers use
+generated headers associations rather than WAI's colgroup/rowgroup markup. No
+renderer behavior or package API was changed in this fixture pass.
+
+Validation: make test passed with 102 Python and 30 TypeScript tests, plus Ruff,
+template, Django, type, and reproducible-build checks. Tests cover native schema
+and TableMap validity for every fixture, server persistence, spanning-header
+associations, public demo HTML, warnings/source links, creating the new page when
+the earlier one exists, and preserving edited pages on reruns. Browser/editor and
+screen-reader review of the new demo remain manual checks. Existing local demo
+content has not been changed; run create_examples to add the page.

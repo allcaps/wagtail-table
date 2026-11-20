@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+from django.utils.html import format_html
+
 
 def example_table(headers="row"):
     rows = []
@@ -64,3 +66,49 @@ def example_tables():
     )
     examples.append(("Larger table pasted from TSV", pasted))
     return examples
+
+
+def accessibility_examples():
+    return json.loads(
+        (
+            Path(__file__).resolve().parents[2]
+            / "fixtures/accessibility/wai-tables.json"
+        ).read_text()
+    )
+
+
+def accessibility_example_body():
+    body = [
+        (
+            "paragraph",
+            (
+                "<p>These original sample tables explore the patterns in the "
+                '<a href="https://www.w3.org/WAI/tutorials/tables/">W3C WAI Tables '
+                "Tutorial</a>. They use wagtail-table JSON and its normal renderer; "
+                "no tutorial HTML is embedded. Each example explains its purpose and "
+                "links to the source guidance. Some intentionally demonstrate current "
+                "renderer limitations. These examples are not an accessibility "
+                "certification; screen-reader and usability checks are still needed.</p>"
+            ),
+        )
+    ]
+    for example in accessibility_examples():
+        body.append(
+            (
+                "paragraph",
+                str(
+                    format_html(
+                        '<h2>{}</h2><p>{}</p><p><a href="{}">WAI guidance</a></p>',
+                        example["title"],
+                        example["motivation"],
+                        example["source"],
+                    )
+                ),
+            )
+        )
+        if example["limitation"]:
+            body.append(
+                ("paragraph", str(format_html("<p>{}</p>", example["limitation"])))
+            )
+        body.append(("table", example["value"]))
+    return body

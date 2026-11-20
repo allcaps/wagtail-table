@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add a WAI-inspired accessibility fixture collection and demo page, with source
+  links, motivations, spanning-header examples, and explicit renderer limitations.
+
 - Replace alignment menu entries with two labelled button groups, original SVG
   icons registered with Wagtail, and accessible names and hover/focus tooltips.
   Put a text-style Clear action after each group's icons to restore defaults.

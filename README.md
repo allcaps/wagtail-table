@@ -61,6 +61,11 @@ Start the SQLite demo with `make demo`. Create a local admin account separately:
 Visit `/admin/` to edit the example page and `/` to inspect published HTML.
 `make demo` also creates `/table-examples/`, showing the four header configurations,
 merged cells, alignment, captions, descriptions, and a larger TSV-pasted table.
+It also creates `/table-accessibility/` with 11 original JSON examples inspired by
+the [W3C WAI Tables Tutorial](https://www.w3.org/WAI/tutorials/tables/). Each includes
+its motivation and a source link. Offset headers and changing header bands carry
+visible warnings about current rendering limitations. Fixture details are in
+[the accessibility fixture guide](tests/fixtures/accessibility/README.md).
 Existing content is preserved; existing example pages are not rewritten.
 For an already running demo, add the examples with:
 
