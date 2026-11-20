@@ -1,7 +1,13 @@
 # Table editor UX research
 
-Status: historical report reviewed on 20 November 2026. Current-product research,
-baseline screenshots, and prototype evaluation have not started.
+Status: historical review and the first live-demo comparison completed on
+20 November 2026. Current Wagtail baseline screenshots and prototype evaluation
+remain pending.
+
+Start with the [visual comparison report](comparison.md): TinyMCE 8.10.2 and
+CKEditor 5 49.1.0, with 17 screenshots of table interactions, observed keyboard
+behavior, and proposed experiments. The [capture index](screenshots/README.md)
+records source pages, versions, dates, and the setup used for the screenshots.
 
 ## Background and original idea
 
@@ -44,8 +50,10 @@ These are research questions, not approved design changes.
 | Set caption and description | Can editors distinguish the two without keeping unnecessary controls in view? |
 
 Reported baseline concerns include button alignment, control placement, and
-limited editing width. These are user observations awaiting a documented review
-of the current demo; they are not findings from a new browser test.
+limited editing width. Small refinements have since added persistent mutually
+exclusive panels, compact fields, grouped cell actions, accurate header states,
+and starter tables. The current demo still needs a documented visual baseline;
+the product comparison is not a new integration test of our editor.
 
 ## Research approach and outputs
 
@@ -66,4 +74,4 @@ browser traces, and temporary experiments outside the repository. Preserve the
 original PDF unchanged; a full transcription is not required for this first pass.
 
 Phase 5 in [PLAN.md](../../../PLAN.md) defines the implementation checkpoint.
-No editor behavior or public package API changes are part of this historical review.
+No editor behavior or public package API changes are part of these research artifacts.

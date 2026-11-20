@@ -3,7 +3,8 @@
 Status: Phases 0–2 complete. Phase 3 implementation and automated verification
 complete; external-source manual checks pending. The user reports the Phase 4
 alpha publication succeeded; broader Phase 4 work remains. Phase 5 historical
-review has started; current-product UX research is pending. Phase 6 has not started.
+review and a first current-product comparison are complete; Wagtail baseline
+capture and UX prototypes remain pending. Phase 6 has not started.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -961,3 +962,26 @@ frontend assets. The frontend was rebuilt. The full Playwright rerun remains
 blocked by the sandbox's server restriction; the updated journeys have not been
 claimed as executed here. The connected browser restarted before the latest
 keyboard switching check completed, so only its mouse result is recorded above.
+
+### First live-demo comparison
+
+On 20 November 2026, reviewed TinyMCE 8.10.2's Non-Premium Plugins demo and
+CKEditor 5 49.1.0's Tables overview demo. Added a visual comparison and capture
+index under `docs/research/table-editor-ux/`, with 17 current viewport screenshots.
+Versions were read from runtime values; source URLs, fixture setup, capture date,
+dimensions, and attribution are recorded. Historical PDF renders remain separate.
+
+Exercised insertion grids, row/column commands, pointer multi-cell selection,
+merge/split, individual header type/scope and alignment, Tab/Shift+Tab, and focus
+shortcuts. CKEditor's caption entry was verified. TinyMCE's caption control was
+captured but activation was inconclusive. CKEditor's keyboard return to a cell
+was observed; TinyMCE's Escape focus return requires manual reproduction despite
+its documented support. Current CKEditor individual header controls update the
+historical report's limitation; the old conclusion is preserved as history.
+
+The report proposes reviewing labelled action groups first, investigating native
+Tiptap menu support for nearby controls, and clarifying cell versus table
+properties. None is an approved implementation change. Real Wagtail baseline
+screenshots, wide/narrow layouts, screen-reader checks, right-click menus, and
+external-app clipboard checks remain outstanding. No package code or dependencies
+were changed in this research pass.
