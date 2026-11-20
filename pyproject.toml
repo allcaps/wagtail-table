@@ -1,0 +1,68 @@
+[project]
+name = "wagtail-table"
+version = "0.1.0a1"
+description = "A native Tiptap table editor for Wagtail StreamField."
+readme = "README.md"
+license = "BSD-3-Clause"
+authors = [{ name = "Coen van der Kamp", email = "coen@fourdigits.nl" }]
+requires-python = ">=3.11"
+dependencies = ["wagtail>=7.4,<8.2"]
+keywords = ["wagtail", "table", "tiptap", "streamfield"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "Framework :: Django",
+  "Framework :: Wagtail",
+  "Programming Language :: Python :: 3",
+]
+
+[project.optional-dependencies]
+test = ["djlint", "pytest", "pytest-django", "ruff"]
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wagtail_table"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src", "/frontend", "/tests", "/scripts", "/.github", "/LICENSE",
+  "/README.md", "/PLAN.md", "/Makefile", "/pyproject.toml",
+  "/package.json", "/package-lock.json", "/tsconfig.json",
+  "/vite.config.ts", "/playwright.config.ts", "/.python-version",
+]
+exclude = ["**/__pycache__", "**/db.sqlite3", "**/staticfiles", "**/media"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.test_project.settings"
+addopts = ["-ra"]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]
+extend-exclude = ["node_modules"]
+
+[tool.ruff.lint]
+extend-select = ["I", "T10", "DJ", "ERA", "C90", "S", "N"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["wagtail_table"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 6
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_*.py" = ["S101"]
+"tests/conftest.py" = ["S101"]
+"**/migrations/*.py" = ["RUF012"]
+
+[tool.djlint]
+profile = "django"
+indent = 2
+blank_line_after_tag = "load,extends,include,endblock"
+extend_exclude = ".venv,node_modules,dist,build"

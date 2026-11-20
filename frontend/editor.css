@@ -1,0 +1,10 @@
+.wagtail-table [data-table-toolbar] { margin-bottom: 0.5rem; }
+.wagtail-table [data-table-editor] { overflow-x: auto; }
+.wagtail-table .tiptap { padding: 0.5rem; min-height: 3rem; }
+.wagtail-table .tiptap:focus-visible { outline: 2px solid var(--w-color-focus, #00a4b4); outline-offset: -2px; }
+.wagtail-table table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+.wagtail-table :is(td, th) { border: 1px solid var(--w-color-border-field-default, #aaa); padding: 0.5rem; position: relative; min-width: 3rem; vertical-align: top; }
+.wagtail-table th { background: var(--w-color-surface-header, #eee); }
+.wagtail-table p { margin: 0; }
+.wagtail-table .selectedCell::after { content: ''; position: absolute; inset: 0; background: var(--w-color-focus, #00a4b4); opacity: 0.2; pointer-events: none; }
+.wagtail-table [data-table-error]:not([hidden]) { color: var(--w-color-text-error, #b4191f); margin-top: 0.5rem; }

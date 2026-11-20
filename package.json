@@ -1,0 +1,28 @@
+{
+  "name": "wagtail-table",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.15.0" },
+  "scripts": {
+    "build": "vite build && node scripts/licenses.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run tests/js",
+    "test:browser": "playwright test",
+    "check:assets": "node scripts/check-assets.mjs"
+  },
+  "dependencies": {
+    "@tiptap/core": "3.34.0",
+    "@tiptap/extension-document": "3.34.0",
+    "@tiptap/extension-paragraph": "3.34.0",
+    "@tiptap/extension-table": "3.34.0",
+    "@tiptap/extension-text": "3.34.0",
+    "@tiptap/extensions": "3.34.0",
+    "@tiptap/pm": "3.34.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "table": {
+    "type": "table",
+    "content": [
+      {
+        "type": "tableRow",
+        "content": [
+          { "type": "tableHeader", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Item" }] }] },
+          { "type": "tableHeader", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Quantity" }] }] }
+        ]
+      },
+      {
+        "type": "tableRow",
+        "content": [
+          { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Apples" }] }] },
+          { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "4" }] }] }
+        ]
+      }
+    ]
+  },
+  "caption": "",
+  "description": ""
+}

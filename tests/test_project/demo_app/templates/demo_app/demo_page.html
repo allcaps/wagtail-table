@@ -1,0 +1,21 @@
+{% load wagtailcore_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page.title }}</title>
+    <link rel="stylesheet" href="{% static 'demo_app/demo.css' %}">
+  </head>
+  <body>
+    <main>
+      <h1>{{ page.title }}</h1>
+      <nav aria-label="Demo actions">
+        <a href="{% url 'wagtailadmin_pages:edit' page.pk %}">Edit this page</a>
+        <a href="{% url 'wagtailadmin_pages:add' 'demo_app' 'demopage' page.pk %}">Add a demo page</a>
+      </nav>
+      {% include_block page.body %}
+    </main>
+  </body>
+</html>
