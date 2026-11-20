@@ -32,10 +32,10 @@ npx playwright install chromium
 make test-browser
 ```
 
-All three Playwright tests passed in a local run outside the development sandbox:
-the admin save/publish journey, Phase 2 editing controls, and widget lifecycle.
-Backend draft/publish round trips are also covered by pytest. The sandbox itself
-blocks the local server and browser process.
+All eight Playwright tests passed in a local run outside the development sandbox,
+including real browser Clipboard API paste, native editing, and save/publish
+journeys. Backend draft/publish round trips are covered by pytest. The sandbox
+itself blocks the local server and browser process.
 
 Start the SQLite demo with `make demo`. Create a local admin account separately:
 
@@ -45,7 +45,8 @@ Start the SQLite demo with `make demo`. Create a local admin account separately:
 
 Visit `/admin/` to edit the example page and `/` to inspect published HTML.
 `make demo` also creates `/table-examples/`, showing the four header configurations,
-merged cells, alignment, captions, and descriptions. Existing content is preserved.
+merged cells, alignment, captions, descriptions, and a larger TSV-pasted table.
+Existing content is preserved; existing example pages are not rewritten.
 For an already running demo, add the examples with:
 
 ```sh
@@ -86,7 +87,13 @@ after structural edits are native Tiptap/ProseMirror behavior. The UI reports a
 custom layout when individual or merged cells no longer match the edge settings;
 changing an edge toggle does not reset unrelated individual headers.
 
-Clipboard behavior and usability work are next in [PLAN.md](PLAN.md).
+Phase 3 clipboard implementation and automated verification are complete;
+see [paste behavior, coverage, and manual checks](docs/clipboard.md).
+HTML tables and tab-separated ranges use native ProseMirror insertion and table
+manipulation. At a text cursor, a range can grow the table; a selected rectangle
+clips or repeats the source. Visible help and notices explain this distinction
+and merged-cell changes. Unsupported table structures are rejected without
+clearing existing cells. The schema prevents nested or unrelated root content.
 Unsupported document content must be corrected before saving; it is never
 silently discarded. External application clipboard compatibility has not yet
 been verified.

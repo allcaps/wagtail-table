@@ -1,5 +1,8 @@
 """Small native documents for exercising the implemented editing features."""
 
+import json
+from pathlib import Path
+
 
 def example_table(headers="row"):
     rows = []
@@ -54,4 +57,10 @@ def example_tables():
     aligned["caption"] = "Fruit in stock"
     aligned["description"] = "Each product has a count for each year."
     examples.append(("Alignment, caption, and description", aligned))
+    pasted = json.loads(
+        (
+            Path(__file__).resolve().parents[2] / "fixtures/clipboard/native-large.json"
+        ).read_text()
+    )
+    examples.append(("Larger table pasted from TSV", pasted))
     return examples

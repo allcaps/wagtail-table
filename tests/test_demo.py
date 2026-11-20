@@ -19,7 +19,7 @@ def test_example_command_keeps_existing_edits():
     call_command("create_examples")
     page = DemoPage.objects.get(slug="table-examples")
     revision_id = page.latest_revision_id
-    assert len([block for block in page.body if block.block_type == "table"]) == 6
+    assert len([block for block in page.body if block.block_type == "table"]) == 7
     call_command("create_examples")
     page.refresh_from_db()
     assert page.latest_revision_id == revision_id

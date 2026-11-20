@@ -1,0 +1,2 @@
+# Generated dependencies can contain intentional whitespace in string literals.
+src/wagtail_table/static/wagtail_table/table.js -whitespace linguist-generated=true

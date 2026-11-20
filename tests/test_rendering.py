@@ -40,6 +40,23 @@ def test_merged_cells_render_spans(table_value):
     assert 'colspan="2"' in TableBlock().render(table_value)
 
 
+def test_native_line_break_round_trip_rendering_and_search(table_value):
+    cell = table_value["table"]["content"][1]["content"][0]
+    cell["content"][0]["content"] = [
+        {"type": "text", "text": "First <safe>"},
+        {"type": "hardBreak"},
+        {"type": "text", "text": "Second"},
+    ]
+    block = TableBlock()
+    assert block.clean(table_value) == table_value
+    html = block.render(table_value)
+    assert "First &lt;safe&gt;" in html
+    assert "<br>" in html
+    assert "Second" in html
+    assert "First <safe>" in block.get_searchable_content(table_value)
+    assert "Second" in block.get_searchable_content(table_value)
+
+
 @pytest.mark.parametrize("value", [None, {}, {"version": 99}, "<script>bad</script>"])
 def test_invalid_or_empty_data_renders_no_table(value):
     assert "<table" not in TableBlock().render(value)

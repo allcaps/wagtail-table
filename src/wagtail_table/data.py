@@ -15,7 +15,7 @@ CHILD_TYPES = {
     "tableRow": ("tableCell", "tableHeader"),
     "tableCell": ("paragraph",),
     "tableHeader": ("paragraph",),
-    "paragraph": ("text",),
+    "paragraph": ("text", "hardBreak"),
 }
 
 
@@ -54,8 +54,8 @@ def validate_node(node, allowed_types):
     if not isinstance(node, dict) or node.get("type") not in allowed_types:
         raise ValidationError(_("The table contains an unsupported content type."))
     node_type = node["type"]
-    if node_type == "text":
-        validate_text(node)
+    if node_type in {"text", "hardBreak"}:
+        validate_inline(node)
         return
     if set(node) - {"type", "content", "attrs"}:
         raise ValidationError(_("The table contains unsupported formatting."))
@@ -73,7 +73,11 @@ def validate_children(node):
     return content
 
 
-def validate_text(node):
+def validate_inline(node):
+    if node["type"] == "hardBreak":
+        if set(node) != {"type"}:
+            raise ValidationError(_("Unsupported line break attributes."))
+        return
     if (
         set(node) != {"type", "text"}
         or not isinstance(node["text"], str)

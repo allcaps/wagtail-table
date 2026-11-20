@@ -18,3 +18,5 @@
 .wagtail-table p { margin: 0; }
 .wagtail-table .selectedCell::after { content: ''; position: absolute; inset: 0; background: var(--w-color-focus, #00a4b4); opacity: 0.2; pointer-events: none; }
 .wagtail-table [data-table-error]:not([hidden]) { color: var(--w-color-text-error, #b4191f); margin-top: 0.5rem; }
+.wagtail-table [data-table-paste-help] { font-size: 0.875rem; margin-top: 0.5rem; }
+.wagtail-table [data-table-status]:not(:empty) { margin-top: 0.5rem; font-weight: 600; }

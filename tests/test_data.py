@@ -71,6 +71,13 @@ def test_marks_are_rejected(table_value):
         validate_value(table_value)
 
 
+def test_line_breaks_cannot_carry_arbitrary_attributes(table_value):
+    paragraph = table_value["table"]["content"][0]["content"][0]["content"][0]
+    paragraph["content"] = [{"type": "hardBreak", "attrs": {"onclick": "bad"}}]
+    with pytest.raises(ValidationError):
+        validate_value(table_value)
+
+
 def test_input_size_and_deep_json():
     with pytest.raises(ValidationError, match="large"):
         TableBlock().clean(" " * (MAX_JSON_LENGTH + 1))

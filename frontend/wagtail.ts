@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/core';
 import { createEditor, tableValue, type TableValue } from './editor';
 import { TableControls, type Strings } from './controls';
 import './editor.css';
+import { clipboardMessages } from './clipboard';
 
 type State = TableValue | null | string;
 type Options = { attributes?: Record<string, string> };
@@ -24,6 +25,7 @@ class BoundTable {
   private message: HTMLElement;
   private controls: TableControls;
   private surface: HTMLElement;
+  private status: HTMLElement;
 
   constructor(
     readonly root: HTMLElement,
@@ -34,6 +36,16 @@ class BoundTable {
   ) {
     this.input = root.querySelector('input')!;
     this.surface = root.querySelector('[data-table-editor]')!;
+    this.status = document.createElement('p');
+    this.status.dataset.tableStatus = '';
+    this.status.setAttribute('role', 'status');
+    this.status.setAttribute('aria-atomic', 'true');
+    const help = document.createElement('p');
+    help.dataset.tablePasteHelp = '';
+    help.id = `${id}-paste-help`;
+    help.textContent = strings.pasteHelp
+      ?? 'Paste at a text cursor to grow the table. A selected cell range clips or repeats pasted cells. Paste can split merged cells. Undo restores the previous table.';
+    root.append(help, this.status);
     this.message = root.querySelector('[data-table-error]')!;
     this.message.id = `${id}-table-error`;
     this.idForLabel = `${id}-editor`;
@@ -56,6 +68,7 @@ class BoundTable {
   }
 
   setState(state: State) {
+    this.status.textContent = '';
     this.state = structuredClone(state);
     this.input.value = typeof state === 'string' ? state : JSON.stringify(state);
     if (typeof state === 'string') {
@@ -68,11 +81,13 @@ class BoundTable {
     }
     if (this.editor) {
       this.editor.commands.setContent(
-        state ? { type: 'doc', content: [state.table] } : { type: 'doc', content: [{ type: 'paragraph' }] },
+        state ? { type: 'doc', content: [state.table] } : { type: 'doc', content: [] },
         { emitUpdate: false },
       );
     } else {
-      this.editor = createEditor(this.surface, state);
+      this.editor = createEditor(this.surface, state, messages => {
+        this.status.textContent = messages.map(key => this.strings[key] ?? clipboardMessages[key]).join(' ');
+      });
       this.editor.on('update', () => this.synchronize());
       this.editor.on('transaction', () => this.controls.refresh(this.editor));
       const dom = this.editor.view.dom;
@@ -86,7 +101,7 @@ class BoundTable {
         }
       }, { signal: this.events.signal });
       dom.setAttribute('aria-describedby', [
-        this.options.attributes?.['aria-describedby'], this.message.id,
+        this.options.attributes?.['aria-describedby'], this.message.id, `${this.input.id}-paste-help`,
       ].filter(Boolean).join(' '));
     }
     this.message.hidden = true;

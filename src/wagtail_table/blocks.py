@@ -82,6 +82,7 @@ class TableBlock(FieldBlock):
             for cell in row.get("content", [])
             for paragraph in cell["content"]
             for text in paragraph.get("content", [])
+            if text["type"] == "text"
         ]
 
     class Meta:

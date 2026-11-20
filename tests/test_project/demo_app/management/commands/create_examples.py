@@ -6,7 +6,7 @@ from tests.test_project.demo_app.models import DemoPage
 
 
 class Command(BaseCommand):
-    help = "Create a child page with Phase 2 examples, keeping any existing edits."
+    help = "Create a child page with table examples, keeping any existing edits."
 
     def handle(self, *args, **options):
         site = Site.objects.filter(is_default_site=True).first()

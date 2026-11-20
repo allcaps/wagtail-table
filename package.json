@@ -2,7 +2,9 @@
   "name": "wagtail-table",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.15.0" },
+  "engines": {
+    "node": ">=22.15.0"
+  },
   "scripts": {
     "build": "vite build && node scripts/licenses.mjs",
     "typecheck": "tsc --noEmit",
@@ -13,6 +15,7 @@
   "dependencies": {
     "@tiptap/core": "3.34.0",
     "@tiptap/extension-document": "3.34.0",
+    "@tiptap/extension-hard-break": "3.34.0",
     "@tiptap/extension-paragraph": "3.34.0",
     "@tiptap/extension-table": "3.34.0",
     "@tiptap/extension-text": "3.34.0",

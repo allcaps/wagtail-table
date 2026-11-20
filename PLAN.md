@@ -1,6 +1,7 @@
 # wagtail-table implementation plan
 
-Status: Phases 0–2 complete. Phases 3–5 have not started.
+Status: Phases 0–2 complete. Phase 3 implementation and automated verification
+complete; external-source manual checks pending. Phases 4–5 have not started.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -683,4 +684,71 @@ Remaining work is in later phases: clipboard policies/interoperability,
 further usability and accessibility review, compatibility matrix validation,
 and publishing preparation. Complex header intent cannot always be recovered
 from geometry; there is no manual association UI. Stable cell IDs and hybrid
-Wagtail block cells remain deferred. Phase 3 awaits review and approval.
+Wagtail block cells remain deferred. Phase 3 was subsequently approved.
+
+## Phase 3 investigation and implementation record
+
+In progress after user approval. Deferred editor refinements do not block this
+phase and have not been promoted into it.
+
+Native browser baseline established before code changes:
+
+- HTML rectangles paste correctly, grow at a cursor, and clip/repeat within a
+  native CellSelection. Source spans are preserved; intersecting destination
+  spans can be split. These behaviors are retained.
+- TSV remains text in one cell without an adapter.
+- The stock cell schema permits nested tables. HTML br becomes whitespace
+  without the official line-break extension.
+
+Implementation prepared:
+
+- A small TSV parser emits native table slices, including quoted fields,
+  CRLF/LF, empty cells, trailing columns, ragged row padding, and multiline values.
+  Ordinary prose uses native paragraph nodes and ProseMirror open-slice fitting.
+- Standard editor paste props reject multiple/nested tables, surrounding prose,
+  malformed quoting/spans, and excessive dimensions before native insertion.
+  Rejected empty slices are intercepted so a selected range cannot be cleared.
+- Existing Document/TableCell/TableHeader schemas are narrowed to one optional
+  root table and paragraph cell content. This is a demonstrated constraint gap,
+  not a separate editing or table-manipulation system.
+- Existing native clipping/repetition and merged-cell behavior is explained with
+  visible help and accessible status notices. Captions/descriptions remain widget
+  metadata; pasted column-width formatting is discarded.
+- Vertical alignment recognizes package-generated classes during clipboard import.
+  Official HardBreak rendering/validation/search support is implemented end to end.
+- Added TSV unit cases, synthetic format examples, browser paste tests, a real
+  browser Clipboard API admin journey, and a larger native-paste demo fixture.
+- Detailed policy and manual interoperability steps are in docs/clipboard.md.
+
+Verification so far:
+
+- `make test` passed: 73 Python tests and 17 TypeScript tests, Django system and
+  migration checks, Ruff, djlint, TypeScript checks, and reproducible builds.
+- Native HTML-pasted JSON captured from the rebuilt editor passes Wagtail admin
+  draft/save/publish tests, preserving line breaks, text escaping, and alignment.
+- Connected-browser DOM paste checks passed for TSV dimensions/empty columns,
+  growth, clipping/repetition, merged destination splitting, non-destructive
+  rejection while cells are selected, alignment import, and constrained HTML.
+- Final connected-browser checks also passed for the representative Office-like
+  and Sheets-like fixtures, HTML br preservation, and native paste undo/redo.
+  These are format examples, not real external-application compatibility claims.
+- The user's full `make test-browser` run passed all eight tests in 10.4 seconds,
+  including synthetic paste cases and actual Clipboard API text/plain and
+  text/html journeys through draft reload and publication. The agent sandbox
+  itself still prevents the test server from starting.
+
+Dependency/build verification:
+
+- The user installed @tiptap/extension-hard-break 3.34.0. Its MIT license, installed
+  version, peer requirements, and npm lock entry were checked. No other dependency
+  versions changed. Assets and bundled license notices were rebuilt successfully.
+- Generated dependency code includes intentional Markdown whitespace in string
+  literals. A scoped .gitattributes entry marks the bundle generated and excludes
+  it from whitespace checking; the native code and string semantics are preserved.
+- Frontend, wheel, and source-distribution builds passed with prebuilt assets.
+
+Outstanding verification:
+
+- Perform and record external-application manual checks separately. Excel,
+  Sheets, Word, and a specific website's clipboard output remain unverified.
+- The deferred refinements remain deferred. Phase 4 has not started.

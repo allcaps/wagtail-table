@@ -2,11 +2,13 @@ import { Editor, type JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
-import { TableKit } from '@tiptap/extension-table';
+import HardBreak from '@tiptap/extension-hard-break';
+import { TableKit, TableCell, TableHeader } from '@tiptap/extension-table';
 import { UndoRedo } from '@tiptap/extensions';
 import { TableMap } from '@tiptap/pm/tables';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { VerticalAlignment } from './alignment';
+import { clipboardProps, type ClipboardNotice } from './clipboard';
 
 export interface TableValue {
   version: 1;
@@ -15,12 +17,22 @@ export interface TableValue {
   description: string;
 }
 
-export function createEditor(element: HTMLElement, value: TableValue | null) {
+export function createEditor(
+  element: HTMLElement, value: TableValue | null,
+  notify: (messages: ClipboardNotice[]) => void = () => {},
+) {
   return new Editor({
     element,
-    extensions: [Document, Paragraph, Text, TableKit, UndoRedo, VerticalAlignment],
+    extensions: [
+      Document.extend({ content: 'table?' }), Paragraph, Text, HardBreak,
+      TableKit.configure({ tableCell: false, tableHeader: false }),
+      TableCell.extend({ content: 'paragraph+' }),
+      TableHeader.extend({ content: 'paragraph+' }),
+      UndoRedo, VerticalAlignment,
+    ],
     content: value ? { type: 'doc', content: [value.table] } : undefined,
     enableContentCheck: true,
+    editorProps: clipboardProps(notify),
   });
 }
 

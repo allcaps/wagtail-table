@@ -26,6 +26,32 @@ class TableInputAdapter(WidgetAdapter):
             {
                 "insert": _("Insert table"),
                 "editor": _("Table contents"),
+                "pasteHelp": _(
+                    "Paste at a text cursor to grow the table. A selected cell range "
+                    "clips or repeats pasted cells. Paste can split merged cells. "
+                    "Undo restores the previous table."
+                ),
+                "pasteUnsupported": _(
+                    "This paste contains multiple or nested tables, surrounding text, "
+                    "or an unsupported table structure. The table was not changed."
+                ),
+                "pasteLimit": _(
+                    "This paste would exceed the table size limit. "
+                    "The table was not changed."
+                ),
+                "pasteFirst": _(
+                    "Insert a table before pasting ordinary text, or paste a complete "
+                    "HTML table or tab-separated range."
+                ),
+                "pasteFit": _(
+                    "The pasted cells were fitted to the selected range: larger ranges "
+                    "are clipped and smaller ranges repeat. "
+                    "Undo restores the previous cells."
+                ),
+                "pasteMerged": _(
+                    "Native table paste may split intersecting merged cells and "
+                    "replace their contents. Undo restores the previous cells."
+                ),
                 "undo": _("Undo"),
                 "redo": _("Redo"),
                 "actions": _("Table actions"),
