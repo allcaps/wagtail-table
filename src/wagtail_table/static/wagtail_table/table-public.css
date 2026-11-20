@@ -1,0 +1,9 @@
+.wagtail-table-align-left { text-align: left; }
+.wagtail-table-align-center { text-align: center; }
+.wagtail-table-align-right { text-align: right; }
+.wagtail-table-valign-top,
+.wagtail-table .wagtail-table-valign-top { vertical-align: top; }
+.wagtail-table-valign-middle,
+.wagtail-table .wagtail-table-valign-middle { vertical-align: middle; }
+.wagtail-table-valign-bottom,
+.wagtail-table .wagtail-table-valign-bottom { vertical-align: bottom; }

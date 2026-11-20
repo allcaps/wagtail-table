@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  publicDir: 'frontend/public',
   build: {
     target: 'es2022',
     outDir: 'src/wagtail_table/static/wagtail_table',

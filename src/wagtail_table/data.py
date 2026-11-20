@@ -89,12 +89,18 @@ def validate_attrs(node_type, attrs):
         if attrs:
             raise ValidationError(_("Unsupported table attributes."))
         return
-    if set(attrs) - {"rowspan", "colspan", "colwidth", "align"}:
+    if set(attrs) - {"rowspan", "colspan", "colwidth", "align", "verticalAlign"}:
         raise ValidationError(_("Unsupported cell attributes."))
-    if attrs.get("align") not in (None, "left", "center", "right"):
-        raise ValidationError(_("Unsupported cell alignment."))
+    validate_alignment(attrs)
     validate_spans(attrs)
     validate_colwidth(attrs)
+
+
+def validate_alignment(attrs):
+    if attrs.get("align") not in (None, "left", "center", "right"):
+        raise ValidationError(_("Unsupported cell alignment."))
+    if attrs.get("verticalAlign") not in (None, "top", "middle", "bottom"):
+        raise ValidationError(_("Unsupported vertical alignment."))
 
 
 def validate_spans(attrs):

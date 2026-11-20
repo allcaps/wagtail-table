@@ -1,7 +1,7 @@
 # wagtail-table
 
-A native Tiptap table editor for Wagtail StreamField. This is an early alpha:
-Phase 1 provides basic text tables, persistence, and safe server-side rendering.
+A native Tiptap table editor for Wagtail StreamField. This early alpha provides
+native text-table editing, JSON persistence, and safe server-side rendering.
 
 ```python
 from wagtail import blocks
@@ -32,10 +32,10 @@ npx playwright install chromium
 make test-browser
 ```
 
-Both Playwright tests passed in a local run outside the development sandbox:
-the full admin create/duplicate/save/reload/publish journey and the widget
-synchronization/disposal test. Backend draft/publish round trips are also covered
-by pytest. The sandbox itself blocks the local server and browser process.
+All three Playwright tests passed in a local run outside the development sandbox:
+the admin save/publish journey, Phase 2 editing controls, and widget lifecycle.
+Backend draft/publish round trips are also covered by pytest. The sandbox itself
+blocks the local server and browser process.
 
 Start the SQLite demo with `make demo`. Create a local admin account separately:
 
@@ -44,6 +44,14 @@ Start the SQLite demo with `make demo`. Create a local admin account separately:
 ```
 
 Visit `/admin/` to edit the example page and `/` to inspect published HTML.
+`make demo` also creates `/table-examples/`, showing the four header configurations,
+merged cells, alignment, captions, and descriptions. Existing content is preserved.
+For an already running demo, add the examples with:
+
+```sh
+.venv/bin/python tests/test_project/manage.py create_examples
+```
+
 The browser tests use their own temporary database and local test credentials.
 
 Authored TypeScript/CSS lives in `frontend/`; generated assets are committed
@@ -55,17 +63,61 @@ step during Python installation.
 ## Current scope
 
 The editor uses native table nodes and stores one table per block in versioned
-JSON. Phase 1 intentionally keeps native Tiptap behavior. Advanced editing UI,
-header associations, alignment controls, metadata UI, and clipboard policies are
-planned in [PLAN.md](PLAN.md); they are not release-ready features yet.
+JSON. Phases 1 and 2 are complete. Current features include:
+
+- Native row/column insertion and deletion, rectangular cell selection, merge,
+  split, undo, and redo, exposed through compact controls.
+- Independent First row headers and First column headers toggles: turn both off
+  for no edge headers, or both on for row and column headers. Header cell toggles
+  the selected cells individually. The actual native cells determine the control
+  states; there is no separately stored header mode.
+- Horizontal left/center/right and vertical top/middle/bottom alignment.
+- An optional caption and a separate, visible description linked to the published
+  table with `aria-describedby`.
+
+Use Tab and Shift+Tab for native cell navigation, Shift+click to select a range,
+and Escape to move from the editor to Table actions. Native Tab at the last cell
+adds a row. Metadata text inputs use ordinary browser undo; the toolbar Undo and
+Redo operate on the native table document.
+
+Merging retains the top-left cell's type and alignment and combines native cell
+content. Splitting retains the content in the first cell. Header types inherited
+after structural edits are native Tiptap/ProseMirror behavior. The UI reports a
+custom layout when individual or merged cells no longer match the edge settings;
+changing an edge toggle does not reset unrelated individual headers.
+
+Clipboard behavior and usability work are next in [PLAN.md](PLAN.md).
 Unsupported document content must be corrected before saving; it is never
 silently discarded. External application clipboard compatibility has not yet
-been verified. Do not use this alpha for complex accessible tables.
+been verified.
 Malformed or unsupported saved values are retained read only; a repair UI is
 not implemented.
 
-Published tables use ordinary semantic HTML. Site styling is owned by the
-integrator; the demo supplies a small example stylesheet.
+## Published tables
+
+Published tables use semantic HTML with escaped text. Leading header rows use
+`thead` when no cell span crosses into the body. Simple edge headers receive
+`scope`; merged edge headers use explicit `id`/`headers` associations without
+inventing row or column groups. Accessibility IDs are unique per render and are
+not stored cell IDs.
+
+Automatic relationships cover identifiable leading header rows and first-column
+headers. Interior headers, corner headers with two possible directions, and
+headers spanning from the header band into data do not receive guessed scopes
+or outgoing associations. Individual `th` cells are preserved in place. Such
+layouts require review and may need simplification; this package does not yet
+provide a manual header-association editor or guarantee arbitrary complex tables
+are accessible.
+
+Include the supplied alignment classes in your public base template:
+
+```django
+{% load static %}
+<link rel="stylesheet" href="{% static 'wagtail_table/table-public.css' %}">
+```
+
+Site layout, borders, and typography remain under the integrator's control.
+No public JavaScript is needed.
 
 ## Releases
 

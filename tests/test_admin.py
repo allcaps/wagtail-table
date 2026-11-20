@@ -8,8 +8,9 @@ from tests.test_project.demo_app.models import DemoPage
 
 
 @pytest.mark.django_db
-def test_native_browser_value_through_admin_draft_and_publish(admin_client):
-    value = json.loads((Path(__file__).parent / "fixtures/native.json").read_text())
+@pytest.mark.parametrize("fixture", ["native.json", "phase2.json"])
+def test_native_browser_value_through_admin_draft_and_publish(admin_client, fixture):
+    value = json.loads((Path(__file__).parent / "fixtures" / fixture).read_text())
     data = {
         "title": "Native table",
         "slug": "native-table",
@@ -50,4 +51,8 @@ def test_native_browser_value_through_admin_draft_and_publish(admin_client):
     response = admin_client.get("/", HTTP_HOST="localhost")
     assert response.status_code == 200
     assert b"Original" in response.content
-    assert b"<table>" in response.content
+    assert b"<table" in response.content
+    if fixture == "phase2.json":
+        assert b"Stock counts" in response.content
+        assert b"wagtail-table-valign-bottom" in response.content
+        assert b"aria-describedby=" in response.content

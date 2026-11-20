@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "table": {
+    "type": "table",
+    "content": [
+      {
+        "type": "tableRow",
+        "content": [
+          {
+            "type": "tableHeader",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Original"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tableHeader",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          },
+          {
+            "type": "tableHeader",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tableRow",
+        "content": [
+          {
+            "type": "tableHeader",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "attrs": {
+              "verticalAlign": "bottom",
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": "right"
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "attrs": {
+              "verticalAlign": "bottom",
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": "right"
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tableRow",
+        "content": [
+          {
+            "type": "tableHeader",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "attrs": {
+              "verticalAlign": null,
+              "colspan": 1,
+              "rowspan": 1,
+              "colwidth": null,
+              "align": null
+            },
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "caption": "Stock counts",
+  "description": "Each row lists one product."
+}

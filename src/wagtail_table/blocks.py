@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from wagtail.blocks import FieldBlock
 
 from .data import MAX_JSON_LENGTH, validate_value
+from .rendering import table_context
 from .widgets import TableInput
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ class TableBlock(FieldBlock):
         except ValidationError:
             logger.warning("Refusing to render an invalid wagtail-table document")
             return context
-        context["rows"] = value["table"]["content"]
+        context.update(table_context(value))
         return context
 
     def get_searchable_content(self, value):
@@ -74,7 +75,8 @@ class TableBlock(FieldBlock):
             return []
         if value is None:
             return []
-        return [
+        metadata = [value.get("caption", ""), value.get("description", "")]
+        return [text for text in metadata if text] + [
             text["text"]
             for row in value["table"]["content"]
             for cell in row.get("content", [])

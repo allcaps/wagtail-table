@@ -1,6 +1,6 @@
 # wagtail-table implementation plan
 
-Status: Phases 0 and 1 complete. Phases 2–5 have not started.
+Status: Phases 0–2 complete. Phases 3–5 have not started.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -524,6 +524,27 @@ Define text/block conversion, identity, merge behavior, and paste behavior then.
 Use the wrapper version for a future migration; do not add cell IDs, sidecar block
 stores, placeholder nodes, or a parallel block editing system in advance.
 
+## Deferred refinements from editor feedback
+
+Recorded after Phase 2. These are retained for a later refinement pass; they do
+not change the current phase order or take priority over the clipboard baseline.
+Some relate to Phase 3's usability work, but recording them does not commit us
+to implementing them in that phase. Prefer native APIs and small changes.
+
+| Refinement | Current behavior | Follow-up |
+| --- | --- | --- |
+| Alignment scope | Horizontal and vertical alignment apply to the current cell or native cell selection. | Add convenient Current cell / Current row / Current column actions. Investigate native row/column cell selections and apply the existing attribute commands, including sensible behavior around merged cells. |
+| Initial table size | Insert table uses Tiptap's default 3×3 size. | Allow choosing rows and columns before insertion. Evaluate simple numeric inputs or an accessible size picker; no particular widget design is chosen yet. Use the existing insertTable options. |
+| Insert control after insertion | Insert table stays visible but is disabled once a table exists. | Consider showing it only in the empty state, and restoring it when the table is removed, including through undo/redo. |
+| Empty required block | TableBlock defaults to required=True, and its unit test rejects an empty value when required validation runs. required=False permits an empty block. | Verify the actual Wagtail admin draft/publish paths: an inserted but empty required table block must prevent publishing and show a clear error. Confirm whether incomplete drafts remain allowed under Wagtail's deferred validation. This explicit empty-block publishing scenario is not covered by the current successful publish tests. |
+| Actions/settings design | Native details panels provide basic grouping and keyboard access. | Improve hierarchy, grouping, labels, control states, and focus behavior using Wagtail's design language. Review with real editing tasks before choosing a new layout. |
+| Large tables in the editor | The editor container has overflow-x: auto, but the table uses width: 100% and fixed layout inside Wagtail's content column. Existing scrolling alone does not establish that wide tables are comfortable to edit. | Test realistic wide/large tables and long cell content. Evaluate using more available width, preserving a readable minimum cell width with horizontal scrolling, or an expanded editing view. Verify keyboard navigation, focus visibility, multi-cell selection, and StreamField lifecycle behavior in the chosen approach. |
+
+Acceptance for a future refinement pass: retain native persistence and editing
+behavior, avoid duplicate editor instances or lost selections, and verify the
+chosen controls with mouse, keyboard, and large-table examples. No refinements
+in this section have been implemented as part of recording this feedback.
+
 ## Risks to resolve with evidence
 
 | Risk | Resolution point |
@@ -598,11 +619,68 @@ Node 22.15.0, and the frontend versions recorded above:
   independent native tables; the widget test verifies synchronization and disposal.
   This completes the Phase 1 acceptance gate.
 
-Outstanding verification and limitations:
+Outstanding verification and limitations at the Phase 1 checkpoint:
 
 - The initial CI workflow has not run on GitHub. Compatibility outside the
   installed Wagtail 8.1/Django 6.1 combination is still unverified.
 - Header scopes/associations, metadata UI/rendering, alignment UI/rendering,
   row/column and merge/split controls, and clipboard policies remain later phases.
   Basic th/td and spans render now; complex accessible tables are not yet supported.
-- No release or publication has been performed. Phase 2 awaits user approval.
+- No release or publication was performed at this checkpoint.
+
+## Phase 2 implementation and verification record
+
+Completed on 20 November 2026 after user approval:
+
+- Compact Table actions and Table settings controls use the existing Tiptap
+  commands for rows, columns, merge/split, individual headers, first-row/column
+  headers, and undo/redo. No custom table commands or manipulation engine were
+  introduced. No dependencies were added or upgraded.
+- Two native edge-header toggles provide the four ordinary configurations.
+  Their state is derived from the native cells using ProseMirror TableMap,
+  including merged geometry. Custom layouts remain custom; changing one edge
+  does not normalize unrelated cells or add a persistent mode flag.
+- Horizontal alignment uses the native `align` attribute. Vertical alignment
+  adds a single small global-attribute extension for both native cell types.
+  This was the confirmed gap in the installed native schema. Both alignments
+  survive save/load and render through allowlisted CSS classes.
+- Caption and description use ordinary labeled inputs and the reserved wrapper
+  fields. Inputs synchronize immediately and duplicate independently. Caption
+  renders as caption; description is visible text associated by aria-describedby.
+- Native table history remains separate from ordinary metadata-input undo.
+  Tab/Shift+Tab retain native navigation, including row creation at the end.
+  Escape provides a keyboard exit from the table to its controls. Mouse toolbar
+  activation preserves native multi-cell selections.
+- Python templates render thead only where spans permit a valid row-group split.
+  Header scopes and explicit associations cover identifiable leading header rows
+  and left-edge row headers. Render-time IDs are unique and are never persisted.
+  Interior/crossing/corner relationships are left unguessed and documented.
+- Merging and splitting keep native behavior, including the top-left cell's type
+  and alignment and the first split cell retaining the merged content.
+- Six representative tables are available at /table-examples/ through the demo's
+  create_examples command. It preserves an existing example page and other edits.
+- The public alignment stylesheet is shipped and checked with generated assets.
+  Editor controls and lifecycle remain separate from Wagtail initialization.
+
+Verification:
+
+- `make test` passed: 70 Python tests, 9 TypeScript tests, Django checks and
+  migration checks, Ruff, djlint, TypeScript checks, and reproducible asset builds.
+- Python tests cover alignment combinations, escaped metadata, scopes and explicit
+  merged/multilevel edge-header associations, crossing rowspans, unique IDs,
+  demo seeding, and native browser JSON through Wagtail draft/publish views.
+- Connected-browser checks passed for the editing commands, header controls,
+  selection-preserving merge/split, metadata synchronization/restoration, and
+  Escape. Final computed-style checks confirmed top/middle/bottom alignment.
+- The user's full `make test-browser` run passed all three tests in 7.8 seconds,
+  including editing controls, save/reload, headers, metadata, alignment,
+  merge/split, and published HTML. The agent's own server launch was blocked by
+  the sandbox; the successful user-run result is recorded separately.
+- Frontend, wheel, and source-distribution builds passed. Demo example creation
+  passed without overwriting existing table content.
+
+Remaining work is in later phases: clipboard policies/interoperability,
+further usability and accessibility review, compatibility matrix validation,
+and publishing preparation. Complex header intent cannot always be recovered
+from geometry; there is no manual association UI. Stable cell IDs and hybrid
+Wagtail block cells remain deferred. Phase 3 awaits review and approval.

@@ -1,8 +1,8 @@
 import type { Editor } from '@tiptap/core';
 import { createEditor, tableValue, type TableValue } from './editor';
+import { TableControls, type Strings } from './controls';
 import './editor.css';
 
-type Strings = Record<'insert' | 'editor' | 'unsupported' | 'invalid', string>;
 type State = TableValue | null | string;
 type Options = { attributes?: Record<string, string> };
 
@@ -22,7 +22,7 @@ class BoundTable {
   private observer: MutationObserver;
   private events = new AbortController();
   private message: HTMLElement;
-  private insert: HTMLButtonElement;
+  private controls: TableControls;
   private surface: HTMLElement;
 
   constructor(
@@ -39,14 +39,7 @@ class BoundTable {
     this.idForLabel = `${id}-editor`;
     this.state = state;
 
-    this.insert = document.createElement('button');
-    this.insert.type = 'button';
-    this.insert.className = 'button button-small button-secondary';
-    this.insert.textContent = strings.insert;
-    root.querySelector('[data-table-toolbar]')!.append(this.insert);
-    this.insert.addEventListener('click', () => {
-      this.editor?.chain().focus().insertTable().run();
-    }, { signal: this.events.signal });
+    this.controls = new TableControls(root, id, strings, this.events.signal, () => this.synchronize());
 
     this.setState(state);
     // Wagtail retains deleted blocks in the form as hidden children. Observe
@@ -68,7 +61,7 @@ class BoundTable {
     if (typeof state === 'string') {
       this.editor?.destroy();
       this.editor = undefined;
-      this.insert.disabled = true;
+      this.controls.refresh();
       this.message.textContent = this.strings.invalid;
       this.message.hidden = false;
       return;
@@ -81,22 +74,33 @@ class BoundTable {
     } else {
       this.editor = createEditor(this.surface, state);
       this.editor.on('update', () => this.synchronize());
+      this.editor.on('transaction', () => this.controls.refresh(this.editor));
       const dom = this.editor.view.dom;
       dom.id = this.idForLabel;
       dom.setAttribute('aria-label', this.strings.editor);
       dom.setAttribute('aria-multiline', 'true');
+      dom.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          this.controls.focus();
+        }
+      }, { signal: this.events.signal });
       dom.setAttribute('aria-describedby', [
         this.options.attributes?.['aria-describedby'], this.message.id,
       ].filter(Boolean).join(' '));
     }
     this.message.hidden = true;
-    this.insert.disabled = !!state;
+    this.controls.setMetadata(state);
+    this.controls.refresh(this.editor);
   }
 
   private synchronize() {
     const doc = this.editor!.getJSON();
     try {
-      this.state = tableValue(doc, typeof this.state === 'string' ? null : this.state);
+      this.state = tableValue(doc, {
+        caption: this.controls.caption.value,
+        description: this.controls.description.value,
+      });
       this.input.value = JSON.stringify(this.state);
       this.message.hidden = true;
     } catch {
@@ -106,7 +110,7 @@ class BoundTable {
       this.message.textContent = this.strings.unsupported;
       this.message.hidden = false;
     }
-    this.insert.disabled = doc.content?.some(node => node.type === 'table') ?? false;
+    this.controls.refresh(this.editor);
     this.input.dispatchEvent(new Event('change', { bubbles: true }));
   }
 

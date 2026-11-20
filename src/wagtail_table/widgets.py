@@ -26,6 +26,41 @@ class TableInputAdapter(WidgetAdapter):
             {
                 "insert": _("Insert table"),
                 "editor": _("Table contents"),
+                "undo": _("Undo"),
+                "redo": _("Redo"),
+                "actions": _("Table actions"),
+                "settings": _("Table settings"),
+                "rows": _("Rows"),
+                "columns": _("Columns"),
+                "choose": _("Choose…"),
+                "addRowBefore": _("Add row before"),
+                "addRowAfter": _("Add row after"),
+                "deleteRow": _("Delete row"),
+                "addColumnBefore": _("Add column before"),
+                "addColumnAfter": _("Add column after"),
+                "deleteColumn": _("Delete column"),
+                "mergeCells": _("Merge cells"),
+                "splitCell": _("Split cell"),
+                "toggleHeaderCell": _("Header cell"),
+                "toggleHeaderRow": _("First row headers"),
+                "toggleHeaderColumn": _("First column headers"),
+                "headerHelp": _(
+                    "Custom headers: keep headers in the top rows or first column "
+                    "for clear relationships."
+                ),
+                "horizontal": _("Horizontal alignment"),
+                "vertical": _("Vertical alignment"),
+                "left": _("Left"),
+                "center": _("Center"),
+                "right": _("Right"),
+                "top": _("Top"),
+                "middle": _("Middle"),
+                "bottom": _("Bottom"),
+                "caption": _("Caption"),
+                "description": _("Description"),
+                "metadataHelp": _(
+                    "The caption names the table. The description explains how to read it."
+                ),
                 "unsupported": _(
                     "Only one table with plain text paragraphs can be saved. "
                     "Remove content outside the table before saving."

@@ -20,6 +20,7 @@ def test_widget_template_media_and_registration():
 def test_static_assets_are_shipped():
     assert finders.find("wagtail_table/table.js")
     assert finders.find("wagtail_table/table.css")
+    assert finders.find("wagtail_table/table-public.css")
     assert finders.find("wagtail_table/THIRD_PARTY_LICENSES.txt")
 
 

@@ -36,4 +36,5 @@ fix-codestyle:
 demo:
 	$(PYTHON) tests/test_project/manage.py migrate
 	$(PYTHON) tests/test_project/manage.py create_content
+	$(PYTHON) tests/test_project/manage.py create_examples
 	$(PYTHON) tests/test_project/manage.py runserver

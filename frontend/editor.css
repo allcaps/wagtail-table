@@ -1,4 +1,14 @@
-.wagtail-table [data-table-toolbar] { margin-bottom: 0.5rem; }
+@import './public/table-public.css';
+.wagtail-table [data-table-toolbar] { margin-bottom: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: start; }
+.wagtail-table details { border: 1px solid var(--w-color-border-field-default, #aaa); border-radius: 3px; padding: 0.4rem; }
+.wagtail-table summary { cursor: pointer; font-weight: 600; }
+.wagtail-table details[open] { flex-basis: 100%; }
+.wagtail-table details[open] summary { margin-bottom: 0.5rem; }
+.wagtail-table details .button { margin: 0.25rem; }
+.wagtail-table details label { display: block; margin-top: 0.5rem; }
+.wagtail-table details :is(input, textarea, select) { width: 100%; max-width: 32rem; }
+.wagtail-table .button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px currentColor; }
+.wagtail-table [hidden] { display: none !important; }
 .wagtail-table [data-table-editor] { overflow-x: auto; }
 .wagtail-table .tiptap { padding: 0.5rem; min-height: 3rem; }
 .wagtail-table .tiptap:focus-visible { outline: 2px solid var(--w-color-focus, #00a4b4); outline-offset: -2px; }

@@ -1,25 +1,16 @@
 {% if rows %}
-  <table>
-    <tbody>
-      {% for row in rows %}
-        <tr>
-          {% for cell in row.content %}
-            {% if cell.type == "tableHeader" %}
-              <th{% if cell.attrs.rowspan > 1 %} rowspan="{{ cell.attrs.rowspan }}"{% endif %}{% if cell.attrs.colspan > 1 %} colspan="{{ cell.attrs.colspan }}"{% endif %}>
-                {% for paragraph in cell.content %}
-                  <p>{% for text in paragraph.content %}{{ text.text }}{% endfor %}</p>
-                {% endfor %}
-              </th>
-            {% else %}
-              <td{% if cell.attrs.rowspan > 1 %} rowspan="{{ cell.attrs.rowspan }}"{% endif %}{% if cell.attrs.colspan > 1 %} colspan="{{ cell.attrs.colspan }}"{% endif %}>
-                {% for paragraph in cell.content %}
-                  <p>{% for text in paragraph.content %}{{ text.text }}{% endfor %}</p>
-                {% endfor %}
-              </td>
-            {% endif %}
-          {% endfor %}
-        </tr>
-      {% endfor %}
-    </tbody>
+  {% if description %}<p id="{{ description_id }}">{{ description }}</p>{% endif %}
+  <table{% if description %} aria-describedby="{{ description_id }}"{% endif %}>
+    {% if caption %}<caption>{{ caption }}</caption>{% endif %}
+    {% if head_rows %}
+      <thead>
+        {% include "wagtail_table/rows.html" with rows=head_rows only %}
+      </thead>
+    {% endif %}
+    {% if body_rows %}
+      <tbody>
+        {% include "wagtail_table/rows.html" with rows=body_rows only %}
+      </tbody>
+    {% endif %}
   </table>
 {% endif %}

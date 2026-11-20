@@ -27,6 +27,8 @@ def test_unsupported_cell_content(table_value, node_type):
         {"colspan": 101},
         {"rowspan": 10},
         {"align": "justify"},
+        {"verticalAlign": "baseline"},
+        {"verticalAlign": 'top" onclick="bad'},
         {"style": "color:red"},
         {"onclick": "alert(1)"},
         {"colwidth": ["100"]},
