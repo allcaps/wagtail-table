@@ -47,22 +47,37 @@ test('native table operations, headers, alignment, and metadata survive publishi
   await expect(widget.locator('[data-table-command=toggleHeaderRow]')).toHaveAttribute('aria-pressed', 'true');
   await expect(widget.locator('[data-table-command=toggleHeaderColumn]')).toHaveAttribute('aria-pressed', 'true');
   await widget.getByRole('button', { name: 'Cell', exact: true }).click();
-  await widget.getByRole('button', { name: 'Align right', exact: true }).click();
+  await widget.getByRole('button', { name: 'Right', exact: true }).click();
   await widget.getByRole('button', { name: 'Cell', exact: true }).click();
-  await widget.getByRole('button', { name: 'Align bottom', exact: true }).click();
+  await widget.getByRole('button', { name: 'Bottom', exact: true }).click();
   await widget.getByLabel('Caption', { exact: true }).fill('Stock counts');
   await widget.getByLabel('Summary', { exact: true }).fill('Each row lists one product.');
 
   // Shift-click selects a native rectangle; our merge button preserves it.
   const dataRow = widget.locator('tr').nth(2);
+  const merge = widget.locator('[data-table-command=mergeCells]');
+  const split = widget.locator('[data-table-command=splitCell]');
   await dataRow.locator('td').first().click();
+  await expect(merge).toBeDisabled();
+  await expect(split).toBeDisabled();
+  await expect(merge).toHaveCSS('opacity', '0.4');
   await dataRow.locator('td').last().click({ modifiers: ['Shift'] });
+  await expect(merge).toBeEnabled();
+  await expect(split).toBeDisabled();
   await widget.getByRole('button', { name: 'Cell', exact: true }).click();
   await widget.getByRole('button', { name: 'Merge cells', exact: true }).click();
   await expect(dataRow.locator('td[colspan="2"]')).toHaveCount(1);
+  await expect(merge).toBeDisabled();
+  await expect(split).toBeEnabled();
   await widget.getByRole('button', { name: 'Cell', exact: true }).click();
   await widget.getByRole('button', { name: 'Split cell', exact: true }).click();
   await expect(dataRow.locator('td')).toHaveCount(2);
+  // Native split keeps the resulting cells selected, so they can be merged again.
+  await expect(merge).toBeEnabled();
+  await expect(split).toBeDisabled();
+  await dataRow.locator('td').first().click();
+  await expect(merge).toBeDisabled();
+  await expect(split).toBeDisabled();
 
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await page.reload();

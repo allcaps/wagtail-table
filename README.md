@@ -95,7 +95,9 @@ JSON. Current features include:
   states; there is no separately stored header mode. Find these edge toggles in
   the Row and Column menus respectively.
 - Horizontal left/center/right and vertical top/middle/bottom alignment, with
-  options to restore defaults. Mixed selections have no active alignment option.
+  compact icon buttons grouped under horizontal and vertical labels in Cell.
+  Each group ends with Clear to restore default alignment. Buttons have
+  accessible names and hover/focus tooltips. Mixed selections have no active option.
 - An optional Caption and a separate, visible Summary linked to the published
   table with `aria-describedby`. Both fields remain visible below the table.
   Summary is stored in the existing `description` property.

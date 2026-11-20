@@ -1055,3 +1055,61 @@ the local/CI server environment.
 Removed permanent paste guidance at the user's request. Clipboard feedback and
 error announcements remain available when needed; removed the unused help string,
 styles, and editor aria-describedby reference.
+
+### Compact alignment button groups
+
+Replaced the flat alignment entries in Cell with two fieldsets labelled Horizontal
+alignment and Vertical alignment. Each starts with a visible Default button,
+followed by three icon buttons. Accessible names and Wagtail hover/focus tooltips
+use Default, Left, Center, Right, Top, Middle, and Bottom. The fieldset legends
+provide context for the repeated Default name. Native buttons retain Tab navigation,
+Enter/Space activation, pressed states, selection preservation, and immediate
+application followed by menu dismissal and editor focus.
+
+Six original 16×16 SVG icons ship as templates and are registered through Wagtail's
+register_icons hook. No third-party artwork, dependencies, or data changes were
+added. Scoped styles remove Wagtail's adjacent-button margins, provide 36px icon
+targets, and use menu foreground colors in both themes. Tooltip controllers are
+disconnected alongside dropdowns when retained blocks are deleted.
+
+Validation: make test passed with 89 Python and 19 TypeScript tests, including
+sprite registration, formatting, template, type, and reproducible-asset checks.
+The updated browser suite collects 13 tests. Its full execution remains blocked
+by the sandbox's local-server restriction. Connected-browser checks with real
+Wagtail controllers verified grouped content, registered icons, keyboard tooltips,
+Tab/Space activation, editor focus return, and cleanup of all eight tooltip and
+three dropdown instances. Inspected light/dark themes and a 500px viewport; the
+menu and its horizontal button rows fit without clipping. Test fixtures were
+removed without saving or publishing the page.
+
+Direct Hatchling builds passed the existing wheel/sdist content checks, including
+all icon templates. An extracted-wheel smoke check using the current dependency
+environment passed imports, static assets, icon registration, and rendering.
+The full fresh-environment distribution check could not acquire uv's cache lock
+under sandbox permissions and remains a local/CI check.
+
+### Clear alignment actions
+
+Replaced Default with a text-style Clear button after each group's three icons.
+The tooltip reads "Clear to use the default" on hover or keyboard focus. Clear
+uses the existing reset command but has no aria-pressed attribute or active-state
+highlight. Unset alignment therefore leaves all directional buttons unpressed;
+mixed selections remain unpressed and can still be cleared. Updated documentation
+and browser assertions for order, labels, tooltips, Tab/Space activation, reset
+behavior, and absent pressed state.
+
+Validation: make test passed (89 Python, 19 TypeScript, all formatting, template,
+type, Django, and reproducible-asset checks). Connected-browser checks confirmed
+horizontal Clear preserves vertical alignment, vertical Clear resets it, keyboard
+focus and tooltip behavior, editor focus return, no reset-button pressed states,
+and fit at a 500px viewport. Full browser execution remains a local/CI check due
+to the sandbox server restriction. Rebuilt the distributed frontend assets.
+
+Merge and split availability continues to use native Tiptap can() checks: merging
+requires a valid multi-cell selection, and splitting requires a single merged
+cell. Added visible disabled styling to menu actions because disabled buttons
+previously looked enabled. Browser assertions cover a normal cell, a selected
+range, a merged cell, and the native multi-cell selection retained after splitting.
+Build, type, and whitespace checks passed; connected-browser inspection confirmed
+disabled actions have reduced opacity and a neutral cursor. The updated full
+browser journey requires a local/CI run.

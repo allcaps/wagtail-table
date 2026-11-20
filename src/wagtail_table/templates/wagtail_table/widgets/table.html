@@ -48,30 +48,74 @@
     <button type="button"
             class="wagtail-table-menu-item"
             data-table-command="toggleHeaderCell">{% translate "Header cell" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item wagtail-table-menu-separator"
-            data-table-align="left">{% translate "Align left" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item"
-            data-table-align="center">{% translate "Align center" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item"
-            data-table-align="right">{% translate "Align right" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item"
-            data-table-align="">{% translate "Default horizontal alignment" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item wagtail-table-menu-separator"
-            data-table-valign="top">{% translate "Align top" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item"
-            data-table-valign="middle">{% translate "Align middle" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item"
-            data-table-valign="bottom">{% translate "Align bottom" %}</button>
-    <button type="button"
-            class="wagtail-table-menu-item"
-            data-table-valign="">{% translate "Default vertical alignment" %}</button>
+    <fieldset class="wagtail-table-alignment">
+      <legend>{% translate "Horizontal alignment" %}</legend>
+      <div class="wagtail-table-alignment-buttons">
+        <button type="button"
+                class="button button-small button-secondary"
+                data-table-align="left"
+                aria-label="{% translate 'Left' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Left' %}">
+          {% icon name="wagtail-table-align-left" %}
+        </button>
+        <button type="button"
+                class="button button-small button-secondary"
+                data-table-align="center"
+                aria-label="{% translate 'Center' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Center' %}">
+          {% icon name="wagtail-table-align-center" %}
+        </button>
+        <button type="button"
+                class="button button-small button-secondary"
+                data-table-align="right"
+                aria-label="{% translate 'Right' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Right' %}">
+          {% icon name="wagtail-table-align-right" %}
+        </button>
+        <button type="button"
+                class="button button-small button-secondary wagtail-table-alignment-clear"
+                data-table-align=""
+                aria-label="{% translate 'Clear' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Clear to use the default' %}">{% translate "Clear" %}</button>
+      </div>
+    </fieldset>
+    <fieldset class="wagtail-table-alignment">
+      <legend>{% translate "Vertical alignment" %}</legend>
+      <div class="wagtail-table-alignment-buttons">
+        <button type="button"
+                class="button button-small button-secondary"
+                data-table-valign="top"
+                aria-label="{% translate 'Top' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Top' %}">{% icon name="wagtail-table-align-top" %}</button>
+        <button type="button"
+                class="button button-small button-secondary"
+                data-table-valign="middle"
+                aria-label="{% translate 'Middle' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Middle' %}">
+          {% icon name="wagtail-table-align-middle" %}
+        </button>
+        <button type="button"
+                class="button button-small button-secondary"
+                data-table-valign="bottom"
+                aria-label="{% translate 'Bottom' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Bottom' %}">
+          {% icon name="wagtail-table-align-bottom" %}
+        </button>
+        <button type="button"
+                class="button button-small button-secondary wagtail-table-alignment-clear"
+                data-table-valign=""
+                aria-label="{% translate 'Clear' %}"
+                data-controller="w-tooltip"
+                data-w-tooltip-content-value="{% translate 'Clear to use the default' %}">{% translate "Clear" %}</button>
+      </div>
+    </fieldset>
     {% enddropdown %}
   </div>
   <p class="help"

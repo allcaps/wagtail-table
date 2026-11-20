@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Replace alignment menu entries with two labelled button groups, original SVG
+  icons registered with Wagtail, and accessible names and hover/focus tooltips.
+  Put a text-style Clear action after each group's icons to restore defaults.
+
 - Start new blocks with a 3×3 table and show Insert table only in empty editors.
   Preserve empty drafts and use native Wagtail required-field validation when
   publishing. Reject any document content outside the single table.

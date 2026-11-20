@@ -69,6 +69,49 @@ test('native Wagtail menus switch, dismiss, and keep metadata visible', async ({
   expect(bounds!.height).toBeLessThanOrEqual(720);
 });
 
+test('alignment groups expose icons, tooltips, and keyboard actions', async ({ page }) => {
+  const widget = page.locator('[data-wagtail-table]');
+  await widget.locator('td p').first().click();
+  const cellMenu = widget.getByRole('button', { name: 'Cell', exact: true });
+  await cellMenu.click();
+  const horizontal = widget.getByRole('group', { name: 'Horizontal alignment', exact: true });
+  const vertical = widget.getByRole('group', { name: 'Vertical alignment', exact: true });
+  await expect(horizontal.getByRole('button')).toHaveCount(4);
+  await expect(vertical.getByRole('button')).toHaveCount(4);
+  await expect(horizontal.getByRole('button').last()).toHaveText('Clear');
+  await expect(vertical.getByRole('button').last()).toHaveText('Clear');
+  for (const alignment of ['left', 'center', 'right', 'top', 'middle', 'bottom']) {
+    await expect(page.locator(`#icon-wagtail-table-align-${alignment}`)).toHaveCount(1);
+  }
+  await horizontal.getByRole('button', { name: 'Left', exact: true }).focus();
+  await expect(horizontal.getByRole('button', { name: 'Left', exact: true })).toBeFocused();
+  await expect(page.getByRole('tooltip', { name: 'Left', exact: true })).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(horizontal.getByRole('button', { name: 'Center', exact: true })).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(cellMenu).toHaveAttribute('aria-expanded', 'false');
+  await expect(widget.locator('.tiptap')).toBeFocused();
+  const saved = JSON.parse(await widget.locator('input[type=hidden]').inputValue());
+  expect(saved.table.content[1].content[0].attrs.align).toBe('center');
+  await cellMenu.click();
+  await horizontal.getByRole('button', { name: 'Right', exact: true }).hover();
+  await expect(page.getByRole('tooltip', { name: 'Right', exact: true })).toBeVisible();
+  await horizontal.getByRole('button', { name: 'Right', exact: true }).focus();
+  await page.keyboard.press('Tab');
+  const clear = horizontal.getByRole('button', { name: 'Clear', exact: true });
+  await expect(clear).toBeFocused();
+  expect(await clear.getAttribute('aria-pressed')).toBeNull();
+  await expect(page.getByRole('tooltip', { name: 'Clear to use the default', exact: true })).toBeVisible();
+  await page.keyboard.press('Space');
+  const cleared = JSON.parse(await widget.locator('input[type=hidden]').inputValue());
+  expect(cleared.table.content[1].content[0].attrs.align).toBeNull();
+  await cellMenu.click();
+  await expect(horizontal.locator('[aria-pressed=true]')).toHaveCount(0);
+  await clear.focus();
+  await page.keyboard.press('Escape');
+  await expect(cellMenu).toBeFocused();
+});
+
 test('cell alignment handles mixed ranges, defaults, headers, and merged cells', async ({ page }) => {
   const widget = page.locator('[data-wagtail-table]');
   const cellMenu = widget.getByRole('button', { name: 'Cell', exact: true });
@@ -76,7 +119,7 @@ test('cell alignment handles mixed ranges, defaults, headers, and merged cells',
   await rows.nth(0).locator('th').first().click();
   await rows.nth(1).locator('td').nth(1).click({ modifiers: ['Shift'] });
   await cellMenu.click();
-  await widget.getByRole('button', { name: 'Align right', exact: true }).click();
+  await widget.getByRole('button', { name: 'Right', exact: true }).click();
   await expect(widget.locator('.selectedCell')).toHaveCount(4);
   let saved = JSON.parse(await widget.locator('input[type=hidden]').inputValue());
   expect(saved.table.content.slice(0, 2).flatMap((row: any) => row.content.slice(0, 2))
@@ -85,19 +128,19 @@ test('cell alignment handles mixed ranges, defaults, headers, and merged cells',
 
   await rows.nth(1).locator('td').first().click();
   await cellMenu.click();
-  await widget.getByRole('button', { name: 'Align left', exact: true }).click();
+  await widget.getByRole('button', { name: 'Left', exact: true }).click();
   await rows.nth(0).locator('th').first().click();
   await rows.nth(1).locator('td').nth(1).click({ modifiers: ['Shift'] });
   await cellMenu.click();
   await expect(widget.locator('[data-table-align][aria-pressed=true]')).toHaveCount(0);
-  await widget.getByRole('button', { name: 'Align right', exact: true }).click();
+  await widget.getByRole('button', { name: 'Right', exact: true }).click();
   await cellMenu.click();
-  await expect(widget.getByRole('button', { name: 'Align right', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await widget.getByRole('button', { name: 'Default horizontal alignment', exact: true }).click();
+  await expect(widget.getByRole('button', { name: 'Right', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await widget.getByRole('group', { name: 'Horizontal alignment', exact: true }).getByRole('button', { name: 'Clear', exact: true }).click();
   await cellMenu.click();
-  await widget.getByRole('button', { name: 'Align bottom', exact: true }).click();
+  await widget.getByRole('button', { name: 'Bottom', exact: true }).click();
   await cellMenu.click();
-  await widget.getByRole('button', { name: 'Default vertical alignment', exact: true }).click();
+  await widget.getByRole('group', { name: 'Vertical alignment', exact: true }).getByRole('button', { name: 'Clear', exact: true }).click();
   saved = JSON.parse(await widget.locator('input[type=hidden]').inputValue());
   expect(saved.table.content.slice(0, 2).flatMap((row: any) => row.content.slice(0, 2))
     .every((cell: any) => cell.attrs.align === null && cell.attrs.verticalAlign === null)).toBe(true);
@@ -108,7 +151,7 @@ test('cell alignment handles mixed ranges, defaults, headers, and merged cells',
   await widget.getByRole('button', { name: 'Merge cells', exact: true }).click();
   await expect(rows.nth(1).locator('td[colspan="2"]')).toHaveCount(1);
   await cellMenu.click();
-  await widget.getByRole('button', { name: 'Align middle', exact: true }).click();
+  await widget.getByRole('button', { name: 'Middle', exact: true }).click();
   saved = JSON.parse(await widget.locator('input[type=hidden]').inputValue());
   expect(saved.table.content[1].content[0].attrs.verticalAlign).toBe('middle');
   expect(saved.table.content[1].content[1].attrs.verticalAlign).toBeNull();
@@ -127,9 +170,12 @@ test('duplicated widgets and deleted-block dropdowns have independent lifecycles
   await first.evaluate(root => {
     (window as any).removedDropdowns = [...root.querySelectorAll('[data-table-menu]')]
       .map(menu => (window as any).wagtail.app.getControllerForElementAndIdentifier(menu, 'w-dropdown'));
+    (window as any).removedTooltips = [...root.querySelectorAll('[data-controller="w-tooltip"]')]
+      .map(button => (window as any).wagtail.app.getControllerForElementAndIdentifier(button, 'w-tooltip'));
   });
   await first.locator('xpath=ancestor::*[@data-streamfield-child][1]').getByTitle('Delete', { exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as any).removedDropdowns.every((controller: any) => controller.tippy.state.isDestroyed))).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).removedTooltips.every((controller: any) => controller.tippy.state.isDestroyed))).toBe(true);
   await second.getByRole('button', { name: 'Row', exact: true }).click();
   await expect(second.getByRole('button', { name: 'Row', exact: true })).toHaveAttribute('aria-expanded', 'true');
 

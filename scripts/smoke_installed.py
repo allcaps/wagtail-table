@@ -35,6 +35,7 @@ settings.configure(
 django.setup()
 
 from django.contrib.staticfiles import finders
+from wagtail.admin.icons import get_icons
 
 import wagtail_table
 from wagtail_table.blocks import TableBlock
@@ -46,6 +47,11 @@ for asset in ("table.js", "table.css", "table-public.css", "THIRD_PARTY_LICENSES
     found = finders.find(f"wagtail_table/{asset}")
     if not found or not Path(found).stat().st_size:
         raise RuntimeError(f"Missing installed static asset: {asset}")
+
+sprite = get_icons()
+for alignment in ("left", "center", "right", "top", "middle", "bottom"):
+    if f'id="icon-wagtail-table-align-{alignment}"' not in sprite:
+        raise RuntimeError(f"Missing installed alignment icon: {alignment}")
 
 value = {
     "version": 1,
@@ -95,5 +101,5 @@ if (
 ):
     raise RuntimeError("Installed templates did not render safe table HTML")
 print(
-    "Installed wheel: imports, static assets, validation, and escaped rendering passed"
+    "Installed wheel: imports, static assets, icons, validation, and rendering passed"
 )

@@ -129,11 +129,19 @@ export class TableControls {
     const alignment = editor ? selectedCellAlignment(editor.state) : { align: undefined, verticalAlign: undefined };
     for (const button of this.horizontal) {
       button.disabled = !inTable;
-      button.setAttribute('aria-pressed', String(inTable && alignment.align === (button.dataset.tableAlign || null)));
+      if (button.dataset.tableAlign) {
+        button.setAttribute('aria-pressed', String(inTable && alignment.align === button.dataset.tableAlign));
+      } else {
+        button.removeAttribute('aria-pressed');
+      }
     }
     for (const button of this.vertical) {
       button.disabled = !inTable;
-      button.setAttribute('aria-pressed', String(inTable && alignment.verticalAlign === (button.dataset.tableValign || null)));
+      if (button.dataset.tableValign) {
+        button.setAttribute('aria-pressed', String(inTable && alignment.verticalAlign === button.dataset.tableValign));
+      } else {
+        button.removeAttribute('aria-pressed');
+      }
     }
   }
 
@@ -142,5 +150,6 @@ export class TableControls {
     // Deleted StreamField blocks can remain mounted and hidden. Removing the
     // controller disconnects Wagtail's dropdowns and destroys their popovers.
     for (const menu of this.menus) menu.removeAttribute('data-controller');
+    for (const button of [...this.horizontal, ...this.vertical]) button.removeAttribute('data-controller');
   }
 }
