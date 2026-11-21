@@ -70,6 +70,11 @@ class TableInputAdapter(WidgetAdapter):
             widget.render("__NAME__", None, attrs={"id": "__ID__"}),
             {
                 "editor": _("Table contents"),
+                "selectCell": _("Select cell, row %(row)s, column %(column)s"),
+                "selectCellHelp": _(
+                    "Click to select this cell. Shift-click to extend the selection, "
+                    "or drag to select cells."
+                ),
                 "pasteBlocks": _(
                     "Table paste, copy, and cut are unavailable for block cells. "
                     "You can still paste ordinary text into individual text cells."

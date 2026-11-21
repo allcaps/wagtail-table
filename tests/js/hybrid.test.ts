@@ -9,6 +9,7 @@ import { history, undo, redo } from '@tiptap/pm/history';
 import { EditorState, NodeSelection, TextSelection } from '@tiptap/pm/state';
 import { blockCellExtension, canChangeCell, cellTypeChange, changeCell, containsBlock } from '../../frontend/hybrid';
 import { tableValue } from '../../frontend/editor';
+import { cellHandles, selectionLabels } from '../../frontend/selection';
 import hybrid from '../fixtures/hybrid.json';
 
 const options = {
@@ -23,6 +24,42 @@ const schema = getSchema([
   TableHeader.extend({ content: '(paragraph+ | wagtailBlock)' }),
   blockCellExtension(options, { cells: new Set(), prefix: 'test', counter: 0 }),
 ]);
+
+describe('cell-selection decorations', () => {
+  it('places handles only in block cells, outside their content', () => {
+    const doc = schema.nodeFromJSON({ type: 'doc', content: [hybrid.table] });
+    const before = doc.toJSON();
+    const positions: number[] = [];
+    doc.descendants((node, pos) => {
+      if (['cell', 'header_cell'].includes(node.type.spec.tableRole ?? '')
+        && node.firstChild?.type.name === 'wagtailBlock') positions.push(pos + 1);
+    });
+    const handles = cellHandles(EditorState.create({ doc }), selectionLabels).find();
+    expect(handles.map(handle => handle.from)).toEqual(positions);
+    expect(handles.every(handle => handle.from === handle.to)).toBe(true);
+    expect(doc.toJSON()).toEqual(before);
+  });
+
+  it('adds one handle per merged cell rather than per covered grid position', () => {
+    const paragraph = { type: 'paragraph' };
+    const block = { type: 'wagtailBlock', attrs: { value: [], state: [] } };
+    const doc = schema.nodeFromJSON({ type: 'doc', content: [{ type: 'table', content: [
+      { type: 'tableRow', content: [
+        { type: 'tableHeader', attrs: { colspan: 2 }, content: [block] },
+        { type: 'tableHeader', attrs: { rowspan: 2 }, content: [block] },
+      ] },
+      { type: 'tableRow', content: [0, 1].map(() => ({ type: 'tableCell', content: [paragraph] })) },
+    ] }] });
+    expect(TableMap.get(doc.firstChild!).problems).toBeNull();
+    const state = EditorState.create({ doc, selection: CellSelection.create(doc, 2) });
+    expect(cellHandles(state, selectionLabels).find()).toHaveLength(2);
+  });
+
+  it('has no handles when the table is deleted', () => {
+    const state = EditorState.create({ schema, doc: schema.nodes.doc.create() });
+    expect(cellHandles(state, selectionLabels).find()).toHaveLength(0);
+  });
+});
 
 describe('native hybrid documents', () => {
   it('restores the fixture with valid table geometry and version 2 storage', () => {

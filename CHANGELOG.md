@@ -5,6 +5,9 @@
 - Flush native Draftail form values before duplicating or submitting hybrid cells
   so an immediate save retains rich text in duplicated tables.
 
+- Add accessible corner-triangle selection handles to Wagtail block cells, with click,
+  Shift-click, dragging, and keyboard selection using native ProseMirror tables.
+
 - Add experimental inline hybrid cells via `TableBlock(cell_block=...)`, with
   native Wagtail StreamBlock editing and multiple items per cell. Include a
   rich-text/image/emoji demo, version-2 persistence, native validation and

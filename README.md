@@ -49,6 +49,12 @@ Choose **Use text** to switch back. Changing a populated cell asks for confirmat
 before clearing its contents. Cells already of the requested type retain their
 contents. `TableBlock()` continues to provide text-only tables.
 
+Wagtail block cells have a small triangle at the top-left corner for selection.
+Click it to select the cell, Shift-click another triangle to extend the range, or
+drag from a triangle across cells. Text cells use native text and cell selection. Keyboard users can focus a handle, press Enter or Space to select its cell,
+then use Shift+Arrow keys to extend the selection. Wagtail fields remain directly
+editable inside block cells.
+
 This first hybrid version has deliberate limits:
 
 - Merging a selection containing block cells is disabled. Splitting keeps the

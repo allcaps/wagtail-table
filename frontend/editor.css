@@ -20,11 +20,15 @@
 .wagtail-table .tableWrapper { overflow-x: auto; border-radius: inherit; }
 .wagtail-table table { border-collapse: collapse; table-layout: fixed; width: 100%; }
 .wagtail-table :is(td, th) { border: 1px solid var(--w-color-border-field-default, #aaa); padding: 0.5rem; position: relative; min-width: 3rem; vertical-align: top; }
+.wagtail-table .wagtail-table-cell-handle { position: absolute; top: 0; left: 0; display: block; width: 1.5rem; height: 1.5rem; box-sizing: border-box; padding: 0; margin: 0; border: 0; border-radius: 0; color: var(--w-color-text-context, #666); background: transparent; cursor: cell; z-index: 1; }
+.wagtail-table .wagtail-table-cell-handle::before { content: ''; position: absolute; top: 0; left: 0; border-top: 0.75rem solid currentColor; border-right: 0.75rem solid transparent; pointer-events: none; }
+.wagtail-table .wagtail-table-cell-handle:hover, .wagtail-table .wagtail-table-cell-handle[aria-pressed="true"] { color: var(--w-color-text-button-outline-default, #007d7e); }
+.wagtail-table .wagtail-table-cell-handle:focus-visible { outline: 2px solid var(--w-color-focus, #00a4b4); outline-offset: -2px; }
 .wagtail-table th { background: var(--w-color-surface-header, #eee); }
 .wagtail-table p { margin: 0; }
 .wagtail-table .selectedCell::after { content: ''; position: absolute; inset: 0; background: var(--w-color-focus, #00a4b4); opacity: 0.2; pointer-events: none; }
 .wagtail-table [data-table-error]:not([hidden]) { color: var(--w-color-text-error, #b4191f); margin-top: 0.5rem; }
 .wagtail-table [data-table-status]:not(:empty) { margin-top: 0.5rem; font-weight: 600; }
-.wagtail-table .wagtail-table-block-cell { min-width: 16rem; padding: 0.5rem; font-weight: normal; }
+.wagtail-table .wagtail-table-block-cell { min-width: 16rem; padding: 1rem 0.5rem 0.5rem; font-weight: normal; }
 .wagtail-table .wagtail-table-block-cell .w-field__wrapper { max-width: none; }
 .wagtail-table .wagtail-table-block-cell .Draftail-Editor { min-width: 12rem; }

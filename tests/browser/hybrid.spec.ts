@@ -67,10 +67,13 @@ test('inline rich text, image, and emoji share a cell and survive duplication an
   await expect(dialog).toBeHidden();
   await cell.getByLabel('Alt text', { exact: true }).fill('Green sample for table');
   await expect(cell.locator('[data-streamfield-child]:not([aria-hidden=true])')).toHaveCount(3);
+  await cell.getByRole('button', { name: /^Select cell,/ }).click();
+  await expect(widget.locator('.selectedCell')).toHaveCount(1);
+  await expect(cell).toHaveClass(/selectedCell/);
 
   // Native table paste must not overwrite the cell's Wagtail content.
-  await row.locator(':scope > td').first().click();
-  await row.locator(':scope > td').last().click({ modifiers: ['Shift'] });
+  await row.locator(':scope > td').first().click({ position: { x: 3, y: 3 } });
+  await row.locator(':scope > td').last().click({ position: { x: 3, y: 3 }, modifiers: ['Shift'] });
   await cellMenu.click();
   await expect(widget.getByRole('button', { name: 'Merge cells', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');

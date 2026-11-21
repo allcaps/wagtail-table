@@ -1228,6 +1228,32 @@ The hybrid browser journey now covers batch conversion and confirmation, but its
 run remains unverified: sandbox restrictions prevented the local server starting
 ([Errno 1] Operation not permitted). Run make test-browser locally.
 
+### Hybrid cell selection handles — 2026-11-21
+
+Added an always-visible, keyboard-focusable selection button at the top-left of
+every physical cell, including merged cells. ProseMirror widget decorations keep
+the handles outside inline Wagtail editors and out of stored/rendered content.
+Selection uses native CellSelection; drag handling delegates to the installed
+tableEditing plugin through its public props. No custom drag loop or schema
+changes were introduced. Shift-click extends the range. Enter/Space activates a
+focused handle and native Shift+Arrow keys extend the selection. Labels and
+tooltips are translated, pressed states follow selection, and cell content has
+reserved space so controls do not overlap it.
+
+Validation: 116 Python and 41 TypeScript tests passed, with Ruff, template,
+Django/migration, and type checks. Frontend assets were rebuilt and reproducibility
+checked. Connected-browser checks on an isolated harness verified single-cell
+selection, dragging from handles across mixed cells and into embedded inputs,
+Enter activation, Shift+Arrow extension, and zero content-change events from
+selection. The harness uses stub inline fields to exercise the real node view;
+it does not prove native Wagtail chooser or rich-text integration.
+
+Added standalone browser regression coverage for handles, Shift-click, keyboard
+activation, mixed-cell dragging, independent tables, and structural edits. The
+native Wagtail hybrid journey now selects cells through handles. Playwright's
+local browser launch is blocked by sandbox permissions (MachPortRendezvousServer
+Permission denied); run make test-browser locally for the full integration pass.
+
 ### Duplicated rich-text persistence fix — 2026-11-21
 
 The local browser run passed 14 of 15 tests. The hybrid journey exposed a real
@@ -1246,9 +1272,28 @@ with a deliberately long save interval. It checks duplication, immediate value
 reads, submitted native fields, and independent edits. The full hybrid journey
 now checks rich text in both tables before and after saving, as well as publishing.
 
-Validation: make test passed (116 Python and 38 TypeScript tests), including Ruff,
-type/template checks, and reproducible assets. The browser suite collects 15
+Validation: make test passed (116 Python and 41 TypeScript tests), including Ruff,
+type/template checks, and reproducible assets. The browser suite collects 16
 tests. A connected-browser harness using the installed native Draftail verified
 that a duplicate with an initial `null` hidden input flushes and submits its live
 rich text without waiting for the save interval. The full Playwright suite still
 requires a local run because sandbox restrictions block browser/server startup.
+
+
+### Quieter block-cell selection controls — 2026-11-21
+
+Refined selection handles to appear only in Wagtail block cells. Each is a small
+top-left triangle with a transparent 24px hit target, accessible button label,
+pressed state, tooltip, and inset keyboard focus ring. Text cells regain their
+normal padding and native selection interactions. Block content leaves space for
+the corner target. Click, Shift-click, drag, and keyboard selection still use the
+same native ProseMirror integration; no stored data changes.
+
+Updated unit and browser coverage to expect handles only on block cells, including
+merged header cells, and to select text ranges through native interactions.
+
+Validation: 41 TypeScript tests, type checks, and reproducible builds passed.
+Connected-browser checks verified that the fixture has two block-cell handles
+and none on text cells, a 12px triangle with a 24px target, restored 8px text-cell
+padding, click selection, dragging into text cells, and keyboard range extension.
+The full Playwright integration suite remains a local check.

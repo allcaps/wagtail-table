@@ -11,6 +11,7 @@ import type { EditorState } from '@tiptap/pm/state';
 import { VerticalAlignment } from './alignment';
 import { clipboardProps, type ClipboardNotice } from './clipboard';
 import { blockCellExtension, type BlockOptions, type CellEditors } from './hybrid';
+import { CellHandles, selectionLabels } from './selection';
 
 export interface TableValue {
   version: 1 | 2;
@@ -23,6 +24,7 @@ export function createEditor(
   element: HTMLElement, value: TableValue | null,
   notify: (messages: ClipboardNotice[]) => void = () => {},
   hybrid?: { block: BlockOptions; editors: CellEditors },
+  labels: typeof selectionLabels = selectionLabels,
 ) {
   return new Editor({
     element,
@@ -32,7 +34,7 @@ export function createEditor(
       TableCell.extend({ content: hybrid ? '(paragraph+ | wagtailBlock)' : 'paragraph+' }),
       TableHeader.extend({ content: hybrid ? '(paragraph+ | wagtailBlock)' : 'paragraph+' }),
       ...(hybrid ? [blockCellExtension(hybrid.block, hybrid.editors)] : []),
-      UndoRedo, VerticalAlignment,
+      UndoRedo, VerticalAlignment, CellHandles.configure(labels),
     ],
     content: value ? { type: 'doc', content: [value.table] } : undefined,
     enableContentCheck: true,

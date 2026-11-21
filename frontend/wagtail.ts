@@ -89,7 +89,9 @@ class BoundTable {
     } else {
       this.editor = createEditor(this.surface, state, messages => {
         this.status.textContent = messages.map(key => this.strings[key] ?? clipboardMessages[key]).join(' ');
-      }, this.block ? { block: this.block, editors: this.cellEditors } : undefined);
+      }, this.block ? { block: this.block, editors: this.cellEditors } : undefined, {
+        selectCell: this.strings.selectCell, selectCellHelp: this.strings.selectCellHelp,
+      });
       this.editor.on('update', ({ transaction }) => this.synchronize(!transaction.getMeta('hybridInitialization')));
       this.editor.on('transaction', () => this.controls.refresh(this.editor));
       const dom = this.editor.view.dom;
