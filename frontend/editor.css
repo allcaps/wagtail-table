@@ -25,3 +25,6 @@
 .wagtail-table .selectedCell::after { content: ''; position: absolute; inset: 0; background: var(--w-color-focus, #00a4b4); opacity: 0.2; pointer-events: none; }
 .wagtail-table [data-table-error]:not([hidden]) { color: var(--w-color-text-error, #b4191f); margin-top: 0.5rem; }
 .wagtail-table [data-table-status]:not(:empty) { margin-top: 0.5rem; font-weight: 600; }
+.wagtail-table .wagtail-table-block-cell { min-width: 16rem; padding: 0.5rem; font-weight: normal; }
+.wagtail-table .wagtail-table-block-cell .w-field__wrapper { max-width: none; }
+.wagtail-table .wagtail-table-block-cell .Draftail-Editor { min-width: 12rem; }

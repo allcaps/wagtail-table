@@ -1,0 +1,9 @@
+{% load wagtailcore_tags %}
+
+{% if cell.block %}
+  {% include_block cell.block %}
+{% else %}
+  {% for paragraph in cell.content %}
+    <p>{% for text in paragraph.content %}{% if text.type == "hardBreak" %}<br>{% else %}{{ text.text }}{% endif %}{% endfor %}</p>
+  {% endfor %}
+{% endif %}

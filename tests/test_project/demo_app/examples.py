@@ -112,3 +112,23 @@ def accessibility_example_body():
             )
         body.append(("table", example["value"]))
     return body
+
+
+def hybrid_example_body():
+    value = json.loads(
+        (Path(__file__).resolve().parents[2] / "fixtures/hybrid.json").read_text()
+    )
+    return [
+        (
+            "paragraph",
+            (
+                "<p>Text cells use Tiptap. Block cells use native Wagtail editors for "
+                "rich text, images, and emoji items. Select one or more cells, then choose "
+                "Cell → Use Wagtail block to try the image chooser, or Use text to "
+                "switch back. Changing populated cells asks before clearing their "
+                "contents. Table paste and merging across block cells "
+                "are deliberately restricted in this first version.</p>"
+            ),
+        ),
+        ("hybrid_table", value),
+    ]

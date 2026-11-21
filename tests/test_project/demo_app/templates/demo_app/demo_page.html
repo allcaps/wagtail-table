@@ -16,7 +16,7 @@
         <a href="{% url 'wagtailadmin_pages:edit' page.pk %}">Edit this page</a>
         <a href="{% url 'wagtailadmin_pages:add' 'demo_app' 'demopage' page.pk %}">Add a demo page</a>
         {% for example_page in page.get_site.root_page.get_children.live %}
-          {% if example_page.slug == "table-examples" or example_page.slug == "table-accessibility" %}
+          {% if example_page.slug == "table-examples" or example_page.slug == "table-accessibility" or example_page.slug == "table-hybrid" %}
             <a href="{% pageurl example_page %}">{{ example_page.title }}</a>
           {% endif %}
         {% endfor %}

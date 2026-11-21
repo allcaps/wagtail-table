@@ -4,6 +4,7 @@ from wagtail.models import Site
 from tests.test_project.demo_app.examples import (
     accessibility_example_body,
     example_tables,
+    hybrid_example_body,
 )
 from tests.test_project.demo_app.models import DemoPage
 
@@ -25,6 +26,7 @@ class Command(BaseCommand):
                 "table-accessibility",
                 accessibility_example_body(),
             ),
+            ("Hybrid table examples", "table-hybrid", hybrid_example_body()),
         ]:
             if site.root_page.get_children().filter(slug=slug).exists():
                 self.stdout.write(f"/{slug}/ already exists; keeping current edits.")

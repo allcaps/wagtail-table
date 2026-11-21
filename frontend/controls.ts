@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/core';
 import { headerConfiguration, headerEdges, selectedCellAlignment, type TableValue } from './editor';
+import { canChangeCell, changeCell, containsBlock, type BlockOptions } from './hybrid';
 
 type Command = 'insertTable' | 'addRowBefore' | 'addRowAfter'
   | 'deleteRow' | 'addColumnBefore' | 'addColumnAfter' | 'deleteColumn'
@@ -25,10 +26,20 @@ export class TableControls {
   private horizontal: HTMLButtonElement[];
   private vertical: HTMLButtonElement[];
   private warning: HTMLElement;
+  private contentButtons: HTMLButtonElement[];
 
-  constructor(root: HTMLElement, id: string, signal: AbortSignal, onMetadata: () => void) {
+  constructor(root: HTMLElement, id: string, signal: AbortSignal, onMetadata: () => void, block?: BlockOptions | null, flushCells?: () => void) {
     this.menus = [...root.querySelectorAll<HTMLElement>('[data-table-menu]')];
     this.rowButton = root.querySelector<HTMLButtonElement>('[data-table-menu="row"] .w-dropdown__toggle')!;
+    this.contentButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-table-content]')];
+    for (const button of this.contentButtons) {
+      button.addEventListener('mousedown', event => event.preventDefault(), { signal });
+      button.addEventListener('click', () => {
+        flushCells?.();
+        if (this.editor && block && changeCell(this.editor, button.dataset.tableContent!, block,
+          () => window.confirm(button.dataset.tableConfirm!))) this.closeMenus();
+      }, { signal });
+    }
     for (const button of root.querySelectorAll<HTMLButtonElement>('[data-table-command]')) {
       const command = button.dataset.tableCommand as Command;
       this.buttons.set(command, button);
@@ -113,8 +124,10 @@ export class TableControls {
     const inTable = !!editor?.isActive('table');
     if (!table) this.closeMenus();
     for (const [command, button] of this.buttons) {
-      button.disabled = !editor || !editor.can()[command]() || (command === 'insertTable' && !!table);
+      button.disabled = !editor || !editor.can()[command]() || (command === 'insertTable' && !!table)
+        || (command === 'mergeCells' && containsBlock(editor.state.selection.content().content));
     }
+    for (const button of this.contentButtons) button.disabled = !editor || !canChangeCell(editor, button.dataset.tableContent!);
     this.buttons.get('insertTable')!.hidden = !!table;
     for (const menu of this.menus) {
       menu.hidden = !table;

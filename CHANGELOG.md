@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Flush native Draftail form values before duplicating or submitting hybrid cells
+  so an immediate save retains rich text in duplicated tables.
+
+- Add experimental inline hybrid cells via `TableBlock(cell_block=...)`, with
+  native Wagtail StreamBlock editing and multiple items per cell. Include a
+  rich-text/image/emoji demo, version-2 persistence, native validation and
+  rendering, reference tracking, batch cell conversion with confirmation before
+  clearing content, and conservative paste/merge rules.
+
 - Add a WAI-inspired accessibility fixture collection and demo page, with source
   links, motivations, spanning-header examples, and explicit renderer limitations.
 

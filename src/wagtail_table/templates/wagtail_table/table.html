@@ -4,12 +4,12 @@
     {% if caption %}<caption>{{ caption }}</caption>{% endif %}
     {% if head_rows %}
       <thead>
-        {% include "wagtail_table/rows.html" with rows=head_rows only %}
+        {% include "wagtail_table/rows.html" with rows=head_rows %}
       </thead>
     {% endif %}
     {% if body_rows %}
       <tbody>
-        {% include "wagtail_table/rows.html" with rows=body_rows only %}
+        {% include "wagtail_table/rows.html" with rows=body_rows %}
       </tbody>
     {% endif %}
   </table>

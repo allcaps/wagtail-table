@@ -5,12 +5,15 @@ from wagtail.models import Page
 
 from wagtail_table.blocks import TableBlock
 
+from .cell_blocks import HybridCellBlock
+
 
 class DemoPage(Page):
     body = StreamField(
         [
             ("paragraph", blocks.RichTextBlock()),
             ("table", TableBlock()),
+            ("hybrid_table", TableBlock(cell_block=HybridCellBlock())),
         ],
         blank=True,
     )

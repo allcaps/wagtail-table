@@ -4,7 +4,8 @@ Status: Phases 0–2 complete. Phase 3 implementation and automated verification
 complete; external-source manual checks pending. The user reports the Phase 4
 alpha publication succeeded; broader Phase 4 work remains. Phase 5 historical
 review and a first current-product comparison are complete; Wagtail baseline
-capture and UX prototypes remain pending. Phase 6 has not started.
+capture and further UX refinement remain pending. Phase 6 now has an experimental
+inline hybrid-cell implementation; full browser verification remains pending.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -566,14 +567,15 @@ and reviewed editing workflows for small and large tables. Context menus are an
 option to evaluate, not an acceptance requirement. Record remaining limitations
 and run the usual checks before closing this phase.
 
-### Phase 6 — Future hybrid cells; excluded from this implementation
+### Phase 6 — Experimental hybrid cells
 
-Revisit `cell_block` configuration and native Wagtail block definitions only after
-the text editor is stable. Investigate existing StreamField/Telepath conventions
-for a single block, a one-choice StreamBlock, and unrestricted StreamBlock cells.
-Define text/block conversion, identity, merge behavior, and paste behavior then.
-Use the wrapper version for a future migration; do not add cell IDs, sidecar block
-stores, placeholder nodes, or a parallel block editing system in advance.
+The user approved starting inline hybrid cells with developer-configured native
+Wagtail blocks. The initial one-item limit was subsequently removed: StreamBlock
+cells may contain multiple blocks, subject to developer-configured constraints.
+Use the native block definitions and Telepath lifecycle rather than a separate
+editing framework. The implementation record below defines storage, conversion,
+history, and clipboard behavior. Review this experimental workflow before adding
+a dialog or broader table/clipboard interactions for block cells.
 
 ## Deferred refinements from editor feedback
 
@@ -1138,3 +1140,115 @@ associations, public demo HTML, warnings/source links, creating the new page whe
 the earlier one exists, and preserving edited pages on reruns. Browser/editor and
 screen-reader review of the new demo remain manual checks. Existing local demo
 content has not been changed; run create_examples to add the page.
+
+### Experimental inline hybrid cells
+
+Implemented the user-approved hybrid milestone through TableBlock(cell_block=...).
+The demo configures a native StreamBlock with rich text, ImageBlock, and emoji
+ChoiceBlock children. The initial single-item proposal was superseded by the
+user: cells now allow multiple items with no default max_num. Integrator-supplied
+StreamBlock limits still apply. TableBlock() remains text-only.
+
+ProseMirror still owns rows, columns, spans, selection, and table history. An
+atomic wagtailBlock node hosts a native Wagtail Telepath block editor inline,
+with contenteditable=false isolating its DOM and keyboard events. Wagtail widgets
+must be attached to the document before their render methods resolve field IDs;
+ProseMirror then places that same DOM inside the cell. Native insertion pickers
+are attached to document.body so scrolling does not clip them, get unique DOM
+IDs, and are destroyed with their owning node views. Widget observers/listeners
+are also released on deletion. Initial native-state normalization does not mark
+the field dirty.
+
+Text tables retain version 1. Hybrid tables use version 2, storing native Wagtail
+prepared block values in their table document. Live Wagtail form state, including
+Draftail's opaque EditorState, is kept separate from submitted/stored values.
+Runtime field prefixes let the Django widget delegate POST decoding to the
+configured block's value_from_datadict; they are removed before persistence.
+No persistent cell IDs or sidecar content store were introduced. Native Wagtail
+StreamBlock item UUIDs are retained and validated. Duplication uses Wagtail's own
+duplicated-state API for fresh item IDs and independent editors.
+
+Python validation rejects unsupported node/attribute shapes, unknown configured
+block types, invalid item IDs, and mixed native text/block content in a cell.
+Configured blocks perform their normal validation and rendering; rich text uses
+its configured editor conversion/feature allowlist. Native image alt text,
+searchable content, references, and reference content paths are supported.
+Required child validation is deferred for drafts and restored for publication.
+Public block rendering uses Wagtail templates and receives the parent context.
+
+Conversion applies to the native selected cell range, or the current cell. Cells
+already of the requested type retain their contents. Changing populated cells
+requires one confirmation before clearing their contents; cancellation leaves the
+selection and contents intact. Empty cells convert without confirmation. Each
+conversion uses a single ProseMirror transaction and preserves spans and cell
+attributes. Merging across block cells is disabled. Tabular paste is disabled while
+any block cell exists; ordinary prose paste into individual text cells remains.
+Copy/cut/drag of table selections containing block content, and table drops in
+hybrid documents, are blocked to avoid lossy native HTML clipboard conversion.
+Tiptap table/text history and native Wagtail widget history remain separate.
+Cell comment paths are disabled through Wagtail's data-contentpath-disabled
+mechanism because positions do not provide stable comment anchors.
+
+Added a hybrid fixture and /table-hybrid/ demo via create_examples, a separate
+Hybrid table choice in the demo StreamField, and its schema migration. Existing
+demo pages are preserved. The browser server now has isolated temporary media
+and a sample image; demo media URLs are served in DEBUG mode.
+
+Validation: make test passed with 116 Python and 33 TypeScript tests, Ruff,
+template/Django/migration/type checks, and reproducible assets. Two ResourceWarnings
+come from Wagtail's native image-rendition temporary files in the image test.
+The browser suite collects 14 tests, including a new multi-item inline editing,
+image selection, duplication, draft/reload, paste protection, and publish journey.
+Its full run was attempted but server startup is blocked by sandbox permissions.
+Connected-browser checks verified native inline editors, multi-item cells, image
+controls, conversion, independent duplication, zero initial table change events,
+and cleanup. Actual captured browser form data decoded to stable native prepared
+values and safe server-rendered HTML. These targeted checks do not constitute a
+full browser save/publish pass.
+
+Direct wheel/sdist content checks and an extracted-wheel smoke check passed.
+The fresh-environment uv distribution check remains a local/CI task because its
+cache directory is outside sandbox write permissions. No new dependencies were
+added. The hybrid feature remains experimental and unreleased; run the browser
+suite locally before calling this phase complete.
+
+
+### Hybrid cell conversion refinement — 2026-11-21
+
+Use ProseMirror's native CellSelection to convert a whole selected range. Only
+cells whose type changes are replaced. One translated native confirmation protects
+populated cells; cancelling preserves content and selection. Pending inline edits
+are flushed before checking for content. Empty conversions need no confirmation.
+The conversion is one undoable transaction, retaining cell types and spans.
+
+Validation: make test passed with 116 Python and 38 TypeScript tests, including
+mixed ranges, cancellation, empty defaults, merged headers, and whole-range
+undo/redo. Ruff, templates, type checks, and reproducible frontend assets passed.
+The hybrid browser journey now covers batch conversion and confirmation, but its
+run remains unverified: sandbox restrictions prevented the local server starting
+([Errno 1] Operation not permitted). Run make test-browser locally.
+
+### Duplicated rich-text persistence fix — 2026-11-21
+
+The local browser run passed 14 of 15 tests. The hybrid journey exposed a real
+save-timing defect: the duplicated table submitted Draftail's initial hidden-input
+value (`null`) while retaining its live editor state. The trace confirms that the
+loss happened in the first draft POST, before server rendering.
+
+Before explicit value/state reads and form submission, cell owners now call the
+native Draftail editor's saveState method, then synchronize the native block
+value. Mutation observers only synchronize values, preventing repeated native
+saves from feeding back into themselves. No custom rich-text serializer or
+timing delay was introduced.
+
+Added a standalone regression using the installed native Wagtail Draftail assets
+with a deliberately long save interval. It checks duplication, immediate value
+reads, submitted native fields, and independent edits. The full hybrid journey
+now checks rich text in both tables before and after saving, as well as publishing.
+
+Validation: make test passed (116 Python and 38 TypeScript tests), including Ruff,
+type/template checks, and reproducible assets. The browser suite collects 15
+tests. A connected-browser harness using the installed native Draftail verified
+that a duplicate with an initial `null` hidden input flushes and submits its live
+rich text without waiting for the save interval. The full Playwright suite still
+requires a local run because sandbox restrictions block browser/server startup.

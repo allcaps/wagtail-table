@@ -1,0 +1,150 @@
+{
+  "version": 2,
+  "table": {
+    "type": "table",
+    "content": [
+      {
+        "type": "tableRow",
+        "content": [
+          {
+            "type": "tableHeader",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Feature"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tableHeader",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Details"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tableHeader",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Included"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tableRow",
+        "content": [
+          {
+            "type": "tableCell",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Support"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "content": [
+              {
+                "type": "wagtailBlock",
+                "attrs": {
+                  "value": [
+                    {
+                      "type": "rich_text",
+                      "value": "<p><b>Community</b> help and documentation.</p>",
+                      "id": "4498af56-7bbb-44ab-ad63-3dd663f42357"
+                    },
+                    {
+                      "type": "emoji",
+                      "value": "\u2139\ufe0f",
+                      "id": "bc59d018-d853-4978-94de-daa470a9399c"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "content": [
+              {
+                "type": "wagtailBlock",
+                "attrs": {
+                  "value": [
+                    {
+                      "type": "emoji",
+                      "value": "\u2705",
+                      "id": "250d58a4-6eac-4113-be6e-08769511aa99"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tableRow",
+        "content": [
+          {
+            "type": "tableCell",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Your image"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          },
+          {
+            "type": "tableCell",
+            "content": [
+              {
+                "type": "paragraph"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "caption": "Hybrid cell examples",
+  "description": ""
+}
