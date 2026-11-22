@@ -17,3 +17,9 @@ class HybridCellBlock(blocks.StreamBlock):
 
     class Meta:
         label = "Cell content"
+
+
+class ResearchCellBlock(HybridCellBlock):
+    """Include an ordinary input when comparing nested editing interactions."""
+
+    text = blocks.CharBlock()

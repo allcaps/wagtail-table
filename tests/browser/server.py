@@ -32,6 +32,7 @@ if __name__ == "__main__":
                 "browser-sample.png", image_file.getvalue(), "image/png"
             ),
         )
+        call_command("create_examples")
         get_user_model().objects.create_superuser(
             username="editor",
             email="editor@example.com",

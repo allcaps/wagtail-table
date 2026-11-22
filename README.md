@@ -22,9 +22,24 @@ class ContentBlock(blocks.StreamBlock):
 
 ## Experimental hybrid cells (unreleased)
 
-Pass a native Wagtail block definition as `cell_block`. A StreamBlock offers a
-choice of content and allows multiple items per cell, using Wagtail's own inline
-controls. Any limits you configure on that StreamBlock still apply.
+Pass a native Wagtail block definition as `cell_block`. Use a direct block when
+converted cells should always contain that field type, without StreamBlock
+insertion, reorder, and item-choice controls:
+
+```python
+from wagtail import blocks
+from wagtail_table.blocks import TableBlock
+
+
+class ContentBlock(blocks.StreamBlock):
+    text_table = TableBlock(cell_block=blocks.CharBlock())
+    rich_table = TableBlock(
+        cell_block=blocks.RichTextBlock(features=["bold", "italic", "link"])
+    )
+```
+
+A StreamBlock adds a choice of content and allows multiple items per cell, using
+Wagtail's own inline controls. Any limits configured on that StreamBlock apply.
 
 ```python
 from wagtail import blocks
@@ -43,9 +58,23 @@ class ContentBlock(blocks.StreamBlock):
     table = TableBlock(cell_block=cell_content)
 ```
 
+For a choice of block types with at most one item, configure the native limit:
+
+```python
+single_item_content = blocks.StreamBlock(
+    [("rich_text", blocks.RichTextBlock()), ("image", ImageBlock())],
+    max_num=1,
+)
+single_item_table = TableBlock(cell_block=single_item_content)
+```
+
+A one-item StreamBlock still has sequence and choice controls; it is not the same
+interface as a direct block. No one-item limit is imposed on other configurations.
+
 Cells start as native text cells. Select one or more cells and choose **Cell → Use
-Wagtail block**, then add rich text, images, emoji, or another configured block.
-Choose **Use text** to switch back. Changing a populated cell asks for confirmation
+Wagtail block**. A direct block displays its configured field immediately; a
+StreamBlock offers its configured choices and insertion controls. Choose
+**Use text** to switch back. Changing a populated cell asks for confirmation
 before clearing its contents. Cells already of the requested type retain their
 contents. `TableBlock()` continues to provide text-only tables.
 
@@ -120,6 +149,12 @@ the [W3C WAI Tables Tutorial](https://www.w3.org/WAI/tutorials/tables/). Each in
 its motivation and a source link. Offset headers and changing header bands carry
 visible warnings about current rendering limitations. Fixture details are in
 [the accessibility fixture guide](tests/fixtures/accessibility/README.md).
+The `/table-editor-comparison/` page places native Wagtail TableBlock,
+TypedTableBlock, and our text/hybrid editors in the same admin form, with matched
+small and wide examples and mixed block content.
+The `/table-cell-content-comparison/` page focuses on direct CharBlock and
+RichTextBlock cells versus one-item and multi-item StreamBlocks, paired with
+TypedTableBlock examples. Existing comparison pages do not need to be reset.
 Existing content is preserved; existing example pages are not rewritten.
 For an already running demo, add the examples with:
 

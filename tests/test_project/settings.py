@@ -12,6 +12,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 INSTALLED_APPS = [
     "tests.test_project.demo_app",
     "wagtail_table",
+    "wagtail.contrib.table_block",
+    "wagtail.contrib.typed_table_block",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",

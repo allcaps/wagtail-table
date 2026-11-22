@@ -14,6 +14,7 @@ from wagtail.images import get_image_model
 from tests.test_project.demo_app.cell_blocks import HybridCellBlock
 from tests.test_project.demo_app.models import DemoPage
 from wagtail_table.blocks import TableBlock
+from wagtail_table.data import default_table_value
 
 
 @pytest.fixture
@@ -51,6 +52,68 @@ def test_stream_cells_allow_multiple_configured_blocks(hybrid_value, hybrid_bloc
     html = hybrid_block.render(clean)
     assert "Community" in html and "⭐" in html
     assert hybrid_block.cell_block.meta.max_num is None
+
+
+@pytest.mark.parametrize(
+    ("native", "raw"),
+    [
+        (blocks.CharBlock(), "Direct text <script>alert(1)</script>"),
+        (blocks.RichTextBlock(features=["bold"]), "<p>Direct <b>rich text</b></p>"),
+    ],
+)
+def test_direct_block_cells_round_trip_native_form_values(native, raw):
+    block = TableBlock(cell_block=native)
+    value = default_table_value()
+    value["version"] = 2
+    cell = value["table"]["content"][1]["content"][1]
+    cell["content"] = [{"type": "wagtailBlock", "attrs": {"value": raw}}]
+    clean = block.clean(value)
+    assert block.clean(json.loads(json.dumps(block.get_prep_value(clean)))) == clean
+    state = block.get_form_state(clean)
+    attrs = state["table"]["content"][1]["content"][1]["content"][0]["attrs"]
+    assert isinstance(attrs["value"], str)
+    native_state = attrs.pop("state")
+    attrs["prefix"] = "table-cell-0"
+    submitted = block.field.widget.value_from_datadict(
+        {"table": json.dumps(state), "table-cell-0": native_state}, {}, "table"
+    )
+    assert block.field.clean(submitted) == clean
+    html = block.render(clean)
+    assert "Direct" in html
+    assert "<script>" not in html
+    assert "Direct" in " ".join(block.get_searchable_content(clean))
+    assert block.get_block_by_content_path(clean, ["table", "2", "2"]).block is native
+
+
+@pytest.mark.parametrize(
+    ("native", "expected_default"),
+    [(blocks.CharBlock(), None), (blocks.RichTextBlock(), "")],
+)
+def test_direct_block_defaults_and_required_validation(native, expected_default):
+    block = TableBlock(cell_block=native)
+    value = default_table_value()
+    value["version"] = 2
+    cell = value["table"]["content"][1]["content"][1]
+    cell["content"] = [{"type": "wagtailBlock", "attrs": {"value": ""}}]
+    assert native.get_prep_value(native.get_default()) == expected_default
+    with pytest.raises(ValidationError):
+        block.clean(value)
+    block.defer_required_validation()
+    assert block.clean(value) == value
+    block.restore_deferred_validation()
+    with pytest.raises(ValidationError):
+        block.clean(value)
+
+
+def test_native_streamblock_one_item_limit_is_preserved(hybrid_value):
+    block = TableBlock(cell_block=HybridCellBlock(max_num=1))
+    value = deepcopy(hybrid_value)
+    cell = value["table"]["content"][1]["content"][1]["content"][0]
+    cell["attrs"]["value"] = cell["attrs"]["value"][:1]
+    assert block.clean(value)
+    cell["attrs"]["value"].append({"type": "emoji", "value": "⭐", "id": None})
+    with pytest.raises(ValidationError):
+        block.clean(value)
 
 
 @pytest.mark.parametrize(
