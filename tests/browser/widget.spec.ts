@@ -102,6 +102,8 @@ test('native Draftail values flush before duplication and immediate form submiss
   expect(JSON.parse(result.posted.table.content[0].content[0].content[0].attrs.value).blocks[0].text).toBe('Helpful hybrid details');
   const editors = page.locator('.Draftail-Editor [contenteditable=true]');
   await expect(editors).toHaveText(['Helpful hybrid details', 'Helpful hybrid details']);
+  await page.locator('[data-wagtail-table]').last().locator('[data-cell-edit]').click();
+  await expect(editors.last()).toBeVisible();
   await editors.last().click();
   await page.keyboard.type('Independent copy');
   const edited = await page.evaluate(() => JSON.parse((window as any).draftailCopy.getValue()));

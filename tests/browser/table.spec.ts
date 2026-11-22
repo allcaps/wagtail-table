@@ -93,7 +93,11 @@ test('create, duplicate, save, reload, and publish independent native tables', a
   await page.getByTitle('Duplicate', { exact: true }).click();
   await expect(widgets).toHaveCount(2);
   await expect(widgets.nth(1).locator('th').first()).toHaveText('Original');
-  await widgets.nth(1).locator('th').first().locator('p').fill('Independent');
+  const copiedHeading = widgets.nth(1).locator('th').first().locator('p');
+  // Focus and select the existing word through normal editor interactions.
+  await copiedHeading.dblclick();
+  await page.keyboard.type('Independent');
+  await expect(copiedHeading).toHaveText('Independent');
   await expect(widgets.first().locator('th').first()).toHaveText('Original');
 
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
