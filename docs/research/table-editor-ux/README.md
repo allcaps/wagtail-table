@@ -77,6 +77,37 @@ exclusive panels, compact fields, grouped cell actions, accurate header states,
 and starter tables. The current demo still needs a documented visual baseline;
 the product comparison is not a new integration test of our editor.
 
+## Finding: TypedTableBlock reserves space for cell editors
+
+Source inspection on 22 November 2026, using the installed Wagtail 8.1 package:
+`wagtail/contrib/typed_table_block/static/typed_table_block/css/typed_table_block.css`.
+Its content cells have a minimum width, and its wrapper allows horizontal scrolling:
+
+```css
+.typed-table-block tbody tr td:not(.control-cell),
+.typed-table-block tfoot tr td:not(.control-cell) {
+  min-width: 20rem;
+  vertical-align: top;
+}
+
+.typed-table-block__wrapper {
+  min-height: 20rem;
+  overflow-x: auto;
+}
+```
+
+This applies to content cells regardless of their configured block type; row
+controls are excluded. The minimum is expressed in `rem`, so its pixel size
+depends on the admin's root font size.
+
+This provides a native Wagtail precedent for reserving editing space and scrolling
+wide tables. For our hybrid editor, a useful experiment is a minimum width for
+block cells together with a scrolling table container. Test both direct fields
+and nested StreamBlocks: sufficient width may reduce crowding, but does not
+resolve competing table-selection and embedded-editor interactions. These rules
+were verified in source; they are not a new browser or usability test, and no
+editor styling has been changed here.
+
 ## Research approach and outputs
 
 1. Capture the current Wagtail demo against the tasks above, including a small
