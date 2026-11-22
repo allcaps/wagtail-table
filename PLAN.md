@@ -1397,3 +1397,66 @@ width. At 390px viewport width, wide tables scroll inside native wrappers withou
 making the page overflow. Local source/TOML/include checks, whitespace checks, and
 Ruff pass. The workflow and Linux download recipe have not run on GitHub here;
 there is no public deployment. Generated book output remains ignored.
+
+## Quiet block-cell experiment — 22 November 2026
+
+Implemented on experiment/quiet-block-cells, based on research/hybrid-table-ux.
+The separate corner-selection branch remains unchanged. Direct fields, one-item
+choices, and multi-item StreamBlocks share passive cell rendering, a labelled
+pencil, and an explicit inline Done action. One active cell per table suspends
+outer editing and structural controls while retaining native Wagtail interactions.
+The active cell has a 22rem minimum width inside the scrolling table wrapper.
+
+Native block rendering supplies initial and refreshed quiet content. An
+authenticated, CSRF-protected POST endpoint resolves signed registered block
+definitions and decodes native form fields without enforcing publish-time
+requiredness. Wagtail's HTML whitelister constrains the output to passive content.
+Rendering failures retain data and an edit button. No frontend page assets,
+custom rendering hook, storage migration, or public constructor changes were added.
+
+Native widgets stay mounted in hidden wrappers, distinct from placeholders that
+Wagtail replaces. Quiet HTML is transient and excluded from saved JSON. Draftail
+flushes before Done, duplication, and submission. The outer editor changes from
+textbox to group while editing so nested fields remain exposed to accessibility
+APIs; caret/selection styling is isolated from ProseMirror's hide-selection rules.
+The native table selection code handles ranges; a quiet-cell click uses native
+CellSelection instead of a draggable block-node selection.
+
+Validation: 134 Python tests and 39 TypeScript tests passed, together with Ruff,
+formatting, template/Django/migration checks, type checking, and reproducible
+frontend assets. Documentation builds and local link checks pass. Two existing
+native image-rendition ResourceWarnings remain. New Python tests include a valid
+multipart request processed by CSRF before the rendering view.
+
+After the user started and restarted the disposable browser server, connected
+Chrome checks verified real direct text and rich-text entry, quiet refresh from
+unsaved values, all four comparison configurations, active widths, disabled table
+controls, focus return, native drag selection across three block cells, and actual
+save/reload. A native image chooser also inserted an image into a multi-item
+cell; Done rendered its passive image and alt text. No production content was
+used. The Playwright suite collects 18
+tests; sandbox restrictions block both local server startup and Chromium launch.
+A temporary configuration was supplied for the user to run against their existing
+server. Its full automated result is still pending; physical touch and manual
+screen-reader review remain separate. Experiment details and limits are recorded
+in docs/research/table-editor-ux/quiet-block-cells.md.
+
+### Quiet-cell follow-up: switch back to table interaction
+
+The table now stays editable while a cell editor is open. Another pencil switches
+directly, and table clicks/actions finish the active edit without moving focus
+back to its pencil. Done remains available for explicit completion. Native field
+and body-mounted chooser/popover interactions stay inside cell editing. Mouse
+selection handlers finish before the editor collapses, preserving the range when
+the expanded cell changes the table's geometry. The active cell uses the normal
+field background and a focus outline rather than the green selection overlay.
+
+Connected-browser checks verified retained values when switching pencils,
+available table controls, automatic closure on a table action, actual typing in
+a text cell after clicking out, and native drag selection of two quiet cells
+while another cell editor was open. Type checks, 39 TypeScript tests, frontend
+build/reproducibility checks, documentation links, and whitespace checks pass.
+The Playwright regression journey now includes these transitions; its automated
+execution still needs the user's local browser run because of the sandbox launch
+restriction. No Python API, persistence, or published rendering changes were made
+in this follow-up.

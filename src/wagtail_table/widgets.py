@@ -1,6 +1,7 @@
 import json
 
 from django import forms
+from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
 from wagtail.admin.telepath import register
@@ -9,6 +10,7 @@ from wagtail.blocks.base import BlockWidget
 
 from .data import MAX_JSON_LENGTH
 from .hybrid import block_cells
+from .quiet import quiet_definition, quiet_html
 
 
 class TableInput(forms.HiddenInput):
@@ -36,6 +38,7 @@ class TableInput(forms.HiddenInput):
             value = json.loads(raw)
             for _row, _column, node in block_cells(value):
                 attrs = node["attrs"]
+                attrs.pop("quiet", None)
                 if "prefix" not in attrs:
                     continue
                 prefix = attrs.pop("prefix")
@@ -115,6 +118,12 @@ class TableInputAdapter(WidgetAdapter):
             "definition": widget.cell_block,
             "defaultValue": widget.cell_block.get_prep_value(value),
             "defaultState": widget.cell_block.get_form_state(value),
+            "defaultQuiet": quiet_html(widget.cell_block, value),
+            "quietUrl": reverse("wagtail_table_quiet_cell"),
+            "quietDefinition": quiet_definition(widget.cell_block),
+            "editLabel": _("Edit cell, row %(row)s, column %(column)s"),
+            "doneLabel": _("Done"),
+            "quietLoading": _("Updating cell content…"),
             "errorMessage": _(
                 "This block editor could not be loaded. Its content has been retained."
             ),

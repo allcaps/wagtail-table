@@ -92,6 +92,13 @@ Cells initially contain native text. Select cells and choose **Cell → Use Wagt
 block** to activate the configured field or sequence. **Use text** switches back.
 Changing populated cells requires confirmation before their content is cleared.
 
+On the quiet-cell experiment branch, converted cells initially show passive
+rendered content. Activate the pencil to edit the cell with its native Wagtail
+controls. Choose **Done**, interact with the table, or activate another pencil to
+finish and preserve the edit. One cell per table can be edited at a time; table
+actions and other tables remain available. This is an editing aid,
+not page preview. See the [experiment notes](research/table-editor-ux/quiet-block-cells.md).
+
 ### Current hybrid limitations
 
 - Merging across Wagtail block cells is disabled. Splitting retains the original
@@ -101,8 +108,8 @@ Changing populated cells requires confirmation before their content is cleared.
   clipboard operations remain separate.
 - Table/text undo and embedded rich-text undo are separate histories.
 - Cell-specific Wagtail comment anchoring is disabled without stable cell paths.
-- Inline sequence controls can overflow narrow columns. Pointer-driven node
-  selection can also suppress nested caret/selection styling. The
+- The earlier always-inline interface exposed overflow and nested caret/selection
+  problems. This experiment separates active editing and gives it more room. The
   [hybrid interaction study](research/table-editor-ux/hybrid-interactions.md)
   records these issues and the proposed experiments.
 

@@ -7,7 +7,7 @@ import { TableKit, TableCell, TableHeader } from '@tiptap/extension-table';
 import { CellSelection, TableMap } from '@tiptap/pm/tables';
 import { history, undo, redo } from '@tiptap/pm/history';
 import { EditorState, NodeSelection, TextSelection } from '@tiptap/pm/state';
-import { blockCellExtension, canChangeCell, cellTypeChange, changeCell, containsBlock } from '../../frontend/hybrid';
+import { blockCellExtension, canChangeCell, cellEditorStates, cellTypeChange, changeCell, containsBlock, type CellEditors } from '../../frontend/hybrid';
 import { tableValue } from '../../frontend/editor';
 import hybrid from '../fixtures/hybrid.json';
 
@@ -25,6 +25,21 @@ const schema = getSchema([
 ]);
 
 describe('native hybrid documents', () => {
+  it('keeps quiet rendering in duplicated form state but out of submitted JSON', () => {
+    const source: JSONContent = structuredClone(hybrid.table);
+    const block = source.content![1].content![1].content![0];
+    Object.assign(block.attrs!, { quiet: '<p>Quiet representation</p>', state: [] });
+    const doc = schema.nodeFromJSON({ type: 'doc', content: [source] });
+    const editor = { state: EditorState.create({ doc }), getJSON: () => doc.toJSON() } as unknown as Editor;
+    const owners: CellEditors = { cells: new Set(), prefix: 'test', counter: 0 };
+    const submitted = cellEditorStates(editor, owners, false);
+    const duplicated = cellEditorStates(editor, owners, true);
+    expect(JSON.stringify(submitted)).not.toContain('quiet');
+    expect(JSON.stringify(submitted)).not.toContain('"state"');
+    expect(duplicated.content![0].content![1].content![1].content![0].attrs?.quiet)
+      .toBe('<p>Quiet representation</p>');
+  });
+
   it('restores the fixture with valid table geometry and version 2 storage', () => {
     const doc = schema.nodeFromJSON({ type: 'doc', content: [hybrid.table] });
     doc.check();

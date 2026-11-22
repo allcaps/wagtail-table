@@ -23,6 +23,7 @@ test('comparison page restores and saves native and Tiptap table editors togethe
   await page.keyboard.type(' Edited');
   const hybrid = page.locator('#body-23-value').locator('..');
   const nestedInput = hybrid.locator('[data-wagtail-cell] input[type=text]').first();
+  await hybrid.locator('[data-cell-edit]').first().click();
   await nestedInput.fill('Updated hybrid details');
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await page.reload();
@@ -51,7 +52,10 @@ test('direct fields and one-item choices preserve native editing, duplication, a
     .locator('[data-streamfield-child]')).toHaveCount(1);
   await expect(tables.nth(3).locator('[data-wagtail-cell]').first()
     .locator('[data-streamfield-child]')).toHaveCount(2);
+  await directText.locator('[data-cell-edit]').click();
   await directText.locator('input[type=text]').fill('Direct field updated');
+  await directText.getByRole('button', { name: 'Done', exact: true }).click();
+  await directRich.locator('[data-cell-edit]').click();
   await directRich.locator('[contenteditable=true]').click();
   await page.keyboard.type(' revised');
   await expect(directRich.locator('[contenteditable=true]')).toContainText('revised');
@@ -78,7 +82,7 @@ test('direct fields and one-item choices preserve native editing, duplication, a
   }
   // Conversion back to native text remains available for populated direct cells.
   const cell = tables.nth(1).locator('td').first();
-  await cell.locator('input[type=text]').click();
+  await cell.click({ clickCount: 3, position: { x: 3, y: 3 } });
   await tables.nth(1).getByRole('button', { name: 'Cell', exact: true }).click();
   page.once('dialog', async dialog => {
     expect(dialog.message()).toBe('This destroys the contents of the selected cells, are you sure?');

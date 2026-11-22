@@ -72,11 +72,16 @@ A one-item StreamBlock still has sequence and choice controls; it is not the sam
 interface as a direct block. No one-item limit is imposed on other configurations.
 
 Cells start as native text cells. Select one or more cells and choose **Cell → Use
-Wagtail block**. A direct block displays its configured field immediately; a
-StreamBlock offers its configured choices and insertion controls. Choose
+Wagtail block**. On the quiet-cell experiment branch, a pencil opens the configured
+native editor inside the cell; **Done** returns to its passive representation.
+Interacting with the table or another pencil also finishes and preserves the edit.
+Direct fields and both kinds of StreamBlock use this same interaction. Choose
 **Use text** to switch back. Changing a populated cell asks for confirmation
 before clearing its contents. Cells already of the requested type retain their
 contents. `TableBlock()` continues to provide text-only tables.
+
+The [quiet-cell experiment](docs/research/table-editor-ux/quiet-block-cells.md)
+separates the editing representation from page preview and records its limits.
 
 This first hybrid version has deliberate limits:
 

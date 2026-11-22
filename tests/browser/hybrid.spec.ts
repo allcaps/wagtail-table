@@ -51,7 +51,7 @@ test('inline rich text, image, and emoji share a cell and survive duplication an
   await widget.getByRole('button', { name: 'Use text', exact: true }).click();
   await expect(batchCells.locator('[data-wagtail-cell]')).toHaveCount(0);
   await expect(batchCells.locator('p')).toHaveText(['', '', '']);
-  await cell.locator('[data-wagtail-cell]').click({ position: { x: 3, y: 3 } });
+  await cell.locator('[data-cell-edit]').click();
 
   await addContent(page, cell, 'Rich text');
   const rich = cell.locator('.Draftail-Editor [contenteditable=true]');
@@ -67,6 +67,7 @@ test('inline rich text, image, and emoji share a cell and survive duplication an
   await expect(dialog).toBeHidden();
   await cell.getByLabel('Alt text', { exact: true }).fill('Green sample for table');
   await expect(cell.locator('[data-streamfield-child]:not([aria-hidden=true])')).toHaveCount(3);
+  await cell.getByRole('button', { name: 'Done', exact: true }).click();
 
   // Native table paste must not overwrite the cell's Wagtail content.
   await row.locator(':scope > td').first().click();
@@ -89,6 +90,7 @@ test('inline rich text, image, and emoji share a cell and survive duplication an
     .getByTitle('Duplicate', { exact: true }).first().click();
   await expect(widgets).toHaveCount(2);
   await expect(widgets.last().locator('.Draftail-Editor [contenteditable=true]')).toHaveText('Helpful hybrid details');
+  await widgets.last().locator('[data-cell-edit]').click();
   await widgets.last().locator('select').selectOption('⭐');
   await expect(widget.locator('select')).toHaveValue('✅');
   const ids = await widgets.evaluateAll(roots => roots.flatMap(root =>

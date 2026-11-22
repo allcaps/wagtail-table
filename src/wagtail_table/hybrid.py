@@ -7,6 +7,8 @@ from uuid import UUID
 from django.core.exceptions import ValidationError
 from wagtail.blocks import ListBlock, RichTextBlock, StreamBlock, StructBlock
 
+from .quiet import quiet_html
+
 
 def block_cells(value):
     if value is not None:
@@ -110,4 +112,5 @@ def form_state(value, block):
         node["attrs"]["value"] = block.get_prep_value(native)
         # This is editor state only. The widget strips it from its submitted JSON.
         node["attrs"]["state"] = block.get_form_state(native)
+        node["attrs"]["quiet"] = quiet_html(block, native)
     return result

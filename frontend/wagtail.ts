@@ -52,6 +52,25 @@ class BoundTable {
     this.state = state;
     this.cellEditors = { cells: new Set(), prefix: this.input.name, counter: 0 };
 
+    const closeCell = (event: Event) => {
+      const active = this.cellEditors.active;
+      if (active && !active.dom.contains(event.target as Node)) active.close(false);
+    };
+    // Finish before toolbar actions or another pencil runs. Body-mounted native
+    // choosers and insertion popovers are outside this root and remain local.
+    root.addEventListener('click', closeCell, { capture: true, signal: this.events.signal });
+    root.addEventListener('focusin', event => {
+      if ((event.target as Element).closest('[data-table-toolbar], [data-table-metadata]')) closeCell(event);
+    }, { signal: this.events.signal });
+    root.addEventListener('mouseup', event => {
+      // Let ProseMirror finish its document-level mouse handlers before hiding
+      // the expanded editor changes the table's geometry.
+      const active = this.cellEditors.active;
+      if (active && !active.dom.contains(event.target as Node)) queueMicrotask(() => {
+        if (this.cellEditors.active === active) active.close(false);
+      });
+    }, { signal: this.events.signal });
+
     this.controls = new TableControls(root, id, this.events.signal, () => this.synchronize(), block, () => { this.getValue(); });
 
     this.setState(state);
@@ -91,7 +110,10 @@ class BoundTable {
         this.status.textContent = messages.map(key => this.strings[key] ?? clipboardMessages[key]).join(' ');
       }, this.block ? { block: this.block, editors: this.cellEditors } : undefined);
       this.editor.on('update', ({ transaction }) => this.synchronize(!transaction.getMeta('hybridInitialization')));
-      this.editor.on('transaction', () => this.controls.refresh(this.editor));
+      this.editor.on('transaction', () => {
+        this.controls.refresh(this.editor);
+        for (const cell of this.cellEditors.cells) cell.label();
+      });
       const dom = this.editor.view.dom;
       dom.id = this.idForLabel;
       dom.setAttribute('aria-label', this.strings.editor);

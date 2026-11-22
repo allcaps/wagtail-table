@@ -1,7 +1,8 @@
 import { Node as TiptapNode, type Editor, type JSONContent } from '@tiptap/core';
 import type { Node as ProseMirrorNode, Fragment } from '@tiptap/pm/model';
-import { NodeSelection, type EditorState } from '@tiptap/pm/state';
+import type { EditorState } from '@tiptap/pm/state';
 import { CellSelection } from '@tiptap/pm/tables';
+import { QuietCell } from './quiet';
 
 interface BoundBlock {
   getValue(): unknown;
@@ -19,6 +20,12 @@ export interface BlockOptions {
   defaultValue: unknown;
   defaultState: unknown;
   errorMessage?: string;
+  defaultQuiet?: string | null;
+  quietUrl?: string;
+  quietDefinition?: string;
+  editLabel?: string;
+  doneLabel?: string;
+  quietLoading?: string;
 }
 
 interface LiveCell {
@@ -26,12 +33,14 @@ interface LiveCell {
   prefix: string;
   flush(): void;
   state(): unknown;
+  label(): void;
 }
 
 interface InserterPopover {
   popper: HTMLElement;
   setProps(options: { appendTo: HTMLElement }): void;
   destroy(): void;
+  hide(): void;
   state: { isDestroyed: boolean };
 }
 
@@ -39,6 +48,7 @@ export interface CellEditors {
   cells: Set<LiveCell>;
   prefix: string;
   counter: number;
+  active?: QuietCell;
 }
 
 declare global {
@@ -119,9 +129,10 @@ export function blockCellExtension(options: BlockOptions, owners: CellEditors) {
     name: 'wagtailBlock',
     group: 'block',
     atom: true,
+    selectable: false,
     isolating: true,
     draggable: false,
-    addAttributes() { return { value: { default: null }, state: { default: null } }; },
+    addAttributes() { return { value: { default: null }, state: { default: null }, quiet: { default: null } }; },
     // Never import a Wagtail block from external HTML or clipboard attributes.
     parseHTML() { return []; },
     renderHTML() { return ['div', { 'data-wagtail-cell': '' }, 'Wagtail content']; },
@@ -137,6 +148,9 @@ export function blockCellExtension(options: BlockOptions, owners: CellEditors) {
         dom.dataset.contentpathDisabled = '';
         dom.contentEditable = 'false';
         const mount = document.createElement('div');
+        mount.dataset.cellFields = '';
+        const placeholder = document.createElement('div');
+        mount.append(placeholder);
         dom.append(mount);
         // Wagtail widgets resolve their IDs via document.getElementById during
         // render. Mount first; ProseMirror moves this same DOM into the cell.
@@ -144,7 +158,9 @@ export function blockCellExtension(options: BlockOptions, owners: CellEditors) {
         const prefix = `${owners.prefix}-cell-${owners.counter++}`;
         let bound: BoundBlock;
         try {
-          bound = options.definition.render(mount, prefix, node.attrs.state ?? options.defaultState);
+          // Wagtail replaces its placeholder. Retain our own wrapper so quiet
+          // mode hides the complete native editor rather than a detached node.
+          bound = options.definition.render(placeholder, prefix, node.attrs.state ?? options.defaultState);
         } catch (error) {
           console.error(error);
           const warning = document.createElement('p');
@@ -177,7 +193,7 @@ export function blockCellExtension(options: BlockOptions, owners: CellEditors) {
           previous = json;
           changing = true;
           editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, {
-            ...current.attrs, value, state: bound.getState(),
+            ...current.attrs, value, state: bound.getState(), quiet: null,
           }).setMeta('addToHistory', false).setMeta('hybridInitialization', !interacted));
           changing = false;
         };
@@ -191,23 +207,39 @@ export function blockCellExtension(options: BlockOptions, owners: CellEditors) {
             flush();
           },
           state: () => bound.getDuplicatedState?.() ?? bound.getState(),
+          label: () => quiet.label(),
         };
         owners.cells.add(owner);
+        const quiet = new QuietCell(dom, mount, editor, owners, options, prefix, getPos, () => {
+          owner.flush();
+          for (const popover of popovers) if (!popover.state.isDestroyed) popover.hide();
+        }, html => {
+          const pos = getPos();
+          if (pos !== undefined && !editor.isDestroyed) editor.view.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, {
+            ...current.attrs, quiet: html,
+          }).setMeta('addToHistory', false).setMeta('hybridInitialization', true));
+        }, node.attrs.quiet ?? (node.attrs.state == null ? options.defaultQuiet : null));
         // Wagtail widgets use both native and jQuery change notifications.
         window.$(dom).on('input change', flush);
         const observer = new MutationObserver(() => { portalInserters(); flush(); });
         observer.observe(dom, { subtree: true, childList: true, attributes: true });
         dom.addEventListener('pointerdown', () => {
+          if (owners.active !== quiet) return;
           interacted = true;
-          const pos = getPos();
-          if (pos !== undefined) editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, pos)));
         });
         for (const event of ['keydown', 'beforeinput', 'click']) {
           dom.addEventListener(event, () => { interacted = true; });
         }
+        dom.addEventListener('click', event => {
+          if (owners.active || event.shiftKey || (event.target as Element).closest('button')) return;
+          const selection = editor.state.selection;
+          if (selection instanceof CellSelection && selection.$anchorCell.pos !== selection.$headCell.pos) return;
+          const pos = getPos();
+          if (pos !== undefined) editor.commands.setCellSelection({ anchorCell: pos - 1 });
+        });
         return {
           dom,
-          stopEvent: () => true,
+          stopEvent: event => owners.active === quiet || (event.target instanceof Element && !!event.target.closest('[data-cell-edit]')),
           ignoreMutation: () => true,
           update(updated) {
             if (updated.type !== current.type) return false;
@@ -219,11 +251,15 @@ export function blockCellExtension(options: BlockOptions, owners: CellEditors) {
               bound.setState(updated.attrs.state ?? options.defaultState);
               previous = JSON.stringify(bound.getValue());
               changing = false;
+              quiet.replace(updated.attrs.quiet);
             }
             current = updated;
+            quiet.label();
+            if (owners.active !== quiet && updated.attrs.quiet != null) quiet.show(updated.attrs.quiet);
             return true;
           },
           destroy() {
+            quiet.destroy();
             observer.disconnect();
             window.$(dom).off('input change', flush);
             for (const popover of popovers) if (!popover.state.isDestroyed) popover.destroy();
@@ -251,7 +287,7 @@ export function cellEditorStates(editor: Editor, owners: CellEditors, formState:
     const cell = live.get(pos);
     const target = nodes[index++];
     target.attrs = formState
-      ? { value: node.attrs.value, state: cell?.state() ?? node.attrs.state }
+      ? { value: node.attrs.value, state: cell?.state() ?? node.attrs.state, quiet: node.attrs.quiet }
       : { value: node.attrs.value, ...(cell ? { prefix: cell.prefix } : {}) };
     return false;
   });

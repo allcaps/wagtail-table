@@ -5,6 +5,10 @@ Status: historical review and the first live-demo comparison completed on
 demo, and twenty Wagtail baseline captures were added on 22 November 2026.
 Prototype review and a full local HTTP/browser integration run remain pending.
 
+The [quiet-cell experiment](quiet-block-cells.md) now implements a separate
+passive state, pencil, and explicit Done action on its experiment branch. The
+baseline captures below remain evidence of the earlier always-inline interface.
+
 Start with the [visual comparison report](comparison.md): TinyMCE 8.10.2 and
 CKEditor 5 49.1.0, with 17 screenshots of table interactions, observed keyboard
 behavior, and proposed experiments. The [capture index](screenshots/README.md)
