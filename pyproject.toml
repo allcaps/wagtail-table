@@ -38,6 +38,7 @@ include = [
   "/README.md", "/CHANGELOG.md", "/PLAN.md", "/Makefile", "/pyproject.toml",
   "/package.json", "/package-lock.json", "/tsconfig.json",
   "/vite.config.ts", "/playwright.config.ts", "/.python-version",
+  "/book.toml",
 ]
 exclude = ["**/__pycache__", "**/db.sqlite3", "**/staticfiles", "**/media"]
 

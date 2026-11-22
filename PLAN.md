@@ -1358,3 +1358,42 @@ Summary is description plus aria-describedby, not the obsolete summary attribute
 No runtime code or supported HTML vocabulary changed. Existing validator/renderer
 tests and focused sample rendering verify the implementation claims; research
 links were checked. This is an inventory, not a new accessibility audit.
+
+
+## mdBook documentation site — 22 November 2026
+
+Added a book.toml and explicit 13-chapter SUMMARY using the existing docs tree.
+New welcome, usage, and development chapters separate integration guidance from
+reference and research. Changelog content uses mdBook's native include of the
+root file rather than a second maintained copy. Existing research pages and
+capture provenance remain part of the book. Thirty-five embedded screenshots
+now link to their originals in both Markdown and the generated site.
+
+The stock mdBook theme provides search, chapter/header navigation, theme choice,
+printing, and scrollable table wrappers. A small project stylesheet widens the
+reading area and gives comparison images usable space without replacing the
+renderer or theme. Repository-source links use GitHub URLs so generated pages do
+not point outside the book. There are no third-party preprocessors or new package
+runtime dependencies. The upstream mdBook MPL-2.0 license was checked before
+selecting the documentation-only tool; the package license is unchanged.
+
+Make docs/docs-serve commands target mdBook 0.5.4. Generated book/ is ignored.
+The docs workflow downloads the official pinned Linux binary, verifies its SHA256
+against the release asset digest, builds the book, and uploads an artifact. It
+does not publish externally. Source distributions include book.toml and docs;
+wheels retain only package contents and do not require mdBook or Rust.
+
+Validation: mdBook 0.5.4 became available through the user's local installation.
+Make docs now builds successfully and runs a standard-library checker for generated
+local links, fragments, and assets across all 16 HTML pages. The built-in index
+preprocessor was disabled while retaining the built-in links/include processor:
+this preserves README.html chapter filenames and prevents existing README.md
+references from turning into broken generated links. No custom preprocessor is
+needed. The same output checker runs in CI after building.
+
+Connected-browser checks verified chapter/header navigation, working search for
+colwidth, loaded research images and full-size image links, and the custom reading
+width. At 390px viewport width, wide tables scroll inside native wrappers without
+making the page overflow. Local source/TOML/include checks, whitespace checks, and
+Ruff pass. The workflow and Linux download recipe have not run on GitHub here;
+there is no public deployment. Generated book output remains ignored.

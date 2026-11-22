@@ -113,6 +113,23 @@ Add `"wagtail_table"` to
 Render with Wagtail's `{% include_block page.body %}`. No frontend JavaScript
 or Node.js is required by the installed Python package.
 
+## Read the documentation
+
+The Markdown under `docs/` builds into a searchable mdBook with guides, an HTML
+support reference, and the visual UX research. Install mdBook 0.5.4 with
+`brew install mdbook` on macOS, or use an
+[official release](https://github.com/rust-lang/mdBook/releases/tag/v0.5.4).
+
+```sh
+make docs
+make docs-serve
+```
+
+Open `http://127.0.0.1:3000`. Screenshots link to their full-size originals, and
+wide comparison tables scroll horizontally. Generated files in `book/` are not
+committed. See the [documentation development guide](docs/development.md) for
+source layout and build details.
+
 ## Development
 
 Local checks currently pass on Python 3.13, Wagtail 8.1, and Django 6.1.
