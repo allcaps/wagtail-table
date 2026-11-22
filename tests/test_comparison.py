@@ -1,4 +1,5 @@
 from collections import Counter
+from contextlib import ExitStack
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -9,6 +10,23 @@ from wagtail.images import get_image_model
 
 from tests.test_project.demo_app.models import DemoPage
 from wagtail_table.blocks import TableBlock
+
+
+@pytest.fixture(autouse=True)
+def close_generated_rendition_files(monkeypatch):
+    image_model = get_image_model()
+    generate = image_model.generate_rendition_file
+    with ExitStack() as files:
+
+        def generate_rendition(image, image_filter, *, source=None):
+            # Wagtail 8.1 can leave its spooled output file open after saving a
+            # rendition. Retain and close actual generated files at test teardown.
+            output = generate(image, image_filter, source=source)
+            files.enter_context(output)
+            return output
+
+        monkeypatch.setattr(image_model, "generate_rendition_file", generate_rendition)
+        yield
 
 
 @pytest.mark.django_db
