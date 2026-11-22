@@ -26,6 +26,13 @@ The [HTML table support overview](html-table-support.md) maps all ten standard
 table-family elements and their attributes to our stored model, editor controls,
 and published HTML, with native Wagtail comparisons. MDN links distinguish current
 semantics from deprecated attributes and editor-only DOM details.
+It also ranks [candidate additions](html-table-support.md#8-candidates-for-further-support),
+records caption-adoption figures and their limits, and proposes a CMS baseline.
+
+The [Wagtail issue and RFC review](wagtail-issues-and-rfcs.md) groups open and
+closed reports into persistence, accessibility, layout, and native integration
+lessons. It distinguishes fixed, duplicate, and unreproduced reports, connects
+the table roadmap to migration needs, and proposes regression scenarios.
 
 ## Background and original idea
 
