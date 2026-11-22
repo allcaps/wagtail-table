@@ -2,6 +2,10 @@
 
 Research date: 20 November 2026. First comparison pass; no editor changes made.
 
+Follow-up: the [22 November hybrid-cell study](hybrid-interactions.md) adds native
+Wagtail baselines and examines embedded editing, quiet states, and cell selection.
+The observations below describe the earlier text-editor comparison.
+
 The strongest candidate to borrow is **a compact set of row, column, and cell
 actions close to the table, with less frequent properties kept separate**.
 We should compare that against our existing labelled toolbar before deciding
@@ -44,13 +48,13 @@ source. Current Wagtail demo screenshots and usability sessions remain pending.
 **TinyMCE — observed:** a nearby toolbar exposes direct structural actions;
 the Table menu remains another entry point.
 
-![TinyMCE: selected table with direct row and column action icons on a nearby toolbar.](screenshots/tinymce-context-toolbar.webp)
+[![TinyMCE: selected table with direct row and column action icons on a nearby toolbar.](screenshots/tinymce-context-toolbar.webp)](screenshots/tinymce-context-toolbar.webp)
 
 **CKEditor — observed:** a compact contextual toolbar groups operations behind
 Row and Column menus, alongside cell and properties controls. It disappeared
 when focus moved outside the editor.
 
-![CKEditor: a contextual toolbar above the table, with separate row, column, cell and properties controls.](screenshots/ckeditor-context-toolbar.webp)
+[![CKEditor: a contextual toolbar above the table, with separate row, column, cell and properties controls.](screenshots/ckeditor-context-toolbar.webp)](screenshots/ckeditor-context-toolbar.webp)
 
 **Proposal:** compare a few clearly labelled controls against an icon strip.
 Proximity may reduce pointer travel, but unfamiliar icons add a discovery cost.
@@ -67,9 +71,9 @@ describe these as configurable arrangements, not universal defaults.
 confirmed a row insertion in CKEditor changed three rows to four, and a column
 insertion in TinyMCE changed three columns to four.
 
-![TinyMCE: Table → Row submenu, grouping insertion, deletion, properties and clipboard operations.](screenshots/tinymce-row-menu.webp)
+[![TinyMCE: Table → Row submenu, grouping insertion, deletion, properties and clipboard operations.](screenshots/tinymce-row-menu.webp)](screenshots/tinymce-row-menu.webp)
 
-![CKEditor: Row menu grouping the header toggle, insertion, deletion and row selection.](screenshots/ckeditor-row-menu.webp)
+[![CKEditor: Row menu grouping the header toggle, insertion, deletion and row selection.](screenshots/ckeditor-row-menu.webp)](screenshots/ckeditor-row-menu.webp)
 
 TinyMCE's [Column menu capture](screenshots/tinymce-column-menu.webp) shows the
 parallel grouping. In CKEditor, the Column menu was also reached by keyboard.
@@ -86,9 +90,9 @@ Using the merge control then combined those cells; splitting restored separate
 cells. The output retained both text values, combined in the first split cell.
 CKEditor's menu distinguished directional merges and directional splits.
 
-![TinyMCE: two selected cells and the Cell menu, with Merge cells enabled and Split cell disabled for the selection.](screenshots/tinymce-merge-menu.webp)
+[![TinyMCE: two selected cells and the Cell menu, with Merge cells enabled and Split cell disabled for the selection.](screenshots/tinymce-merge-menu.webp)](screenshots/tinymce-merge-menu.webp)
 
-![CKEditor: selected cells and the merge dropdown, showing directional actions and their availability.](screenshots/ckeditor-merge-menu.webp)
+[![CKEditor: selected cells and the merge dropdown, showing directional actions and their availability.](screenshots/ckeditor-merge-menu.webp)](screenshots/ckeditor-merge-menu.webp)
 
 The unobstructed selection captures are available for
 [TinyMCE](screenshots/tinymce-multiple-cells.webp) and
@@ -107,9 +111,9 @@ right/bottom alignment to the intended cell. Their output contained `th` and
 `scope="row"`; unrelated cells remained data cells. Opening and saving properties
 retained the target selection.
 
-![TinyMCE: Cell Properties dialog with explicit Cell type, Scope, Horizontal align and Vertical align fields.](screenshots/tinymce-cell-properties.webp)
+[![TinyMCE: Cell Properties dialog with explicit Cell type, Scope, Horizontal align and Vertical align fields.](screenshots/tinymce-cell-properties.webp)](screenshots/tinymce-cell-properties.webp)
 
-![CKEditor: cell-properties balloon with type, dimensions, visual styling and alignment controls.](screenshots/ckeditor-cell-properties.webp)
+[![CKEditor: cell-properties balloon with type, dimensions, visual styling and alignment controls.](screenshots/ckeditor-cell-properties.webp)](screenshots/ckeditor-cell-properties.webp)
 
 The type choices are visible in the
 [TinyMCE dropdown](screenshots/tinymce-header-types.webp) and
@@ -130,9 +134,9 @@ remain in Wagtail's design language; it need not reproduce either vendor's UI.
 **Observed:** both grid pickers highlighted a 3×3 range and inserted nine cells
 when activated.
 
-![TinyMCE: nested insertion grid showing a 3×3 selection and size readout.](screenshots/tinymce-insert-grid.webp)
+[![TinyMCE: nested insertion grid showing a 3×3 selection and size readout.](screenshots/tinymce-insert-grid.webp)](screenshots/tinymce-insert-grid.webp)
 
-![CKEditor: insertion grid showing a 3×3 selection and size readout.](screenshots/ckeditor-insert-grid.webp)
+[![CKEditor: insertion grid showing a 3×3 selection and size readout.](screenshots/ckeditor-insert-grid.webp)](screenshots/ckeditor-insert-grid.webp)
 
 **Proposal:** keep our automatic 3×3 starter table for now. If editors need an
 initial size choice, compare simple labelled row/column inputs with a grid
@@ -145,13 +149,13 @@ an accessible grid widget. Its keyboard use was not tested in this pass.
 there, and accepted “Stock overview”. Its output was a figure caption, which is
 different from this package's server-rendered HTML table caption.
 
-![CKEditor: caption editing directly below the table.](screenshots/ckeditor-inline-caption.webp)
+[![CKEditor: caption editing directly below the table.](screenshots/ckeditor-inline-caption.webp)](screenshots/ckeditor-inline-caption.webp)
 
 TinyMCE exposed a caption checkbox in Table Properties. The attempt to activate
 that checkbox through automation was inconclusive; only the visible control is
 recorded here.
 
-![TinyMCE: Table Properties dialog with the Show caption checkbox among table-level settings.](screenshots/tinymce-table-properties.webp)
+[![TinyMCE: Table Properties dialog with the Show caption checkbox among table-level settings.](screenshots/tinymce-table-properties.webp)](screenshots/tinymce-table-properties.webp)
 
 **Proposal:** evaluate placing the caption field nearer the table, while keeping
 its meaning separate from the description. Neither this observation nor a

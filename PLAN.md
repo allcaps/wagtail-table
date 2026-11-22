@@ -3,8 +3,10 @@
 Status: Phases 0–2 complete. Phase 3 implementation and automated verification
 complete; external-source manual checks pending. The user reports the Phase 4
 alpha publication succeeded; broader Phase 4 work remains. Phase 5 historical
-review and a first current-product comparison are complete; Wagtail baseline
-capture and further UX refinement remain pending. Phase 6 now has an experimental
+review and a first current-product comparison are complete. A hybrid interaction
+study and native Wagtail comparison demo were added on 22 November 2026, with
+offline admin baseline captures; prototype review and live HTTP/browser checks
+remain pending. Phase 6 now has an experimental
 inline hybrid-cell implementation; full browser verification remains pending.
 Investigation date: 20 November 2026.
 
@@ -531,10 +533,11 @@ unavailable checks explicitly and update this plan with evidence and open issues
 
 ### Phase 5 — UX research and refinement
 
-Refine the text-table editing experience before investigating hybrid cells.
-This is a dedicated follow-up phase; it does not start hybrid-cell work or make
-every deferred refinement a requirement for the initial release. Fix obvious
-layout defects during Phase 4 if they obstruct normal use.
+Refine table editing through research and small, reviewed experiments. This phase
+started with text tables and now also examines the experimental Phase 6 hybrid
+cells. Research does not make every deferred refinement a release requirement.
+The current checkpoint covers evidence and a comparison demo, not a new editor
+interaction model. Fix obvious layout defects separately when they obstruct use.
 
 1. Review the original PDF report and write a short prelude covering the original
    motivation, needs that remain relevant, and how ProseMirror and Tiptap inform
@@ -1252,3 +1255,106 @@ tests. A connected-browser harness using the installed native Draftail verified
 that a duplicate with an initial `null` hidden input flushes and submits its live
 rich text without waiting for the save interval. The full Playwright suite still
 requires a local run because sandbox restrictions block browser/server startup.
+
+
+## Hybrid interaction research and comparison demo — 22 November 2026
+
+The research branch now extends Phases 5 and 6 with an evidence-first review of
+selection versus embedded editing, quiet cell representations, and available
+editing space. The report is docs/research/table-editor-ux/hybrid-interactions.md.
+The historical PDF and first TinyMCE/CKEditor report remain intact.
+
+The development demo adds native Wagtail TableBlock and TypedTableBlock alongside
+our text and hybrid editors. The /table-editor-comparison/ page contains ten
+small, wide, and mixed-content tables, including a CharBlock inside StreamBlock
+cells. A demo-only ResearchCellBlock and migration keep this configuration out of
+the package API. Seeding reuses its sample image and preserves existing pages.
+No package editor, schema, dependency, or frontend asset changes were needed.
+
+Twelve curated baseline screenshots use Django-rendered admin/public responses
+and the installed assets, opened through file URLs in an isolated browser. An
+HTTP server could not bind in the sandbox. These captures establish local DOM
+interaction and layout observations, not HTTP submission, chooser/modal, live
+page-preview, or accessibility conformance results. Their provenance and limits
+are recorded in the capture index; raw snapshots and disposable data stay out of
+Git.
+
+Findings: native text grids select ranges; protected block widgets retain an
+atomic node selection. Clicking embedded widgets activates Tiptap's descendant
+hide-selection styles, making nested input/rich-text carets transparent; rich
+text has a real DOM selection with a transparent highlight. This is a concrete
+integration defect to isolate in a follow-up, not a reason to replace the engines.
+Fixed-width columns are narrower than the existing block-editor minimum width,
+so controls spill across cells even with a scrolling wrapper. Native collapse
+reduces height but retains controls and does not render final content.
+
+The report distinguishes block-picker examples, current-value quiet states, and
+whole-page preview. Native server-side block rendering is reusable, but it is
+not an automatic browser renderer for unsaved form state. Industry patterns are
+linked primary-documentation evidence unless directly observed. Next proposed
+prototypes, in order: a compact table overview with a separate active-cell editor;
+then one active inline editor with an explicit selection mode. Width and expanded
+workspace work complements either. No prototypes or preview endpoints were added.
+
+Validation: make test passed with 118 Python and 38 TypeScript tests, Ruff,
+template/type/Django/migration checks, and reproducible assets. Two native image
+rendition ResourceWarnings remain. The browser suite collects 16 tests, including
+a comparison save/reload journey. Full Playwright execution remains blocked by
+local-server permissions and needs a local run. Connected-browser checks verified
+native TableBlock and Tiptap range selection, nested focus and DOM selection,
+caret/selection CSS values, and native child collapse; they do not replace that
+integration run. Review the two proposed directions before implementing either.
+
+
+## Direct fields versus StreamBlock cells — 22 November 2026
+
+Extended the study to treat direct CharBlock/RichTextBlock cells as primary
+configurations. The package already accepts these through cell_block; no new API
+or storage representation was needed. StreamBlock(max_num=1) remains a distinct
+choice interface, and unrestricted multi-item StreamBlocks remain supported.
+A single ImageBlock/StructBlock may still contain multiple fields; field
+complexity, type choice, and sequence length are separate research dimensions.
+
+Added /table-cell-content-comparison/ with paired native TypedTableBlock and our
+tables for direct text, direct rich text, one-item StreamBlock choices, and
+multi-item StreamBlocks. Demo-only choices and migration 0004 preserve existing
+comparison pages and edits. TypedTableBlock now offers a one_block column type.
+Stable native StreamBlock item UUIDs use distinct keys for each example variant.
+
+Eight matched synthetic-content screenshots extend the capture set to twenty.
+For these six-data-cell tables, observed heights were approximately 259/372/536/
+814px for direct text/direct rich text/one-item sequence/two-item sequence. This
+is fixture-specific layout evidence, not a universal usability claim. The study
+and README now lead with direct fields and reserve larger interaction-model
+experiments primarily for richer configurations. Caret/style isolation remains
+a separate problem for all embedded fields.
+
+Validation: make test passed with 124 Python and 38 TypeScript tests, Ruff,
+Django/migration/template/type checks, and reproducible assets. New Python coverage
+checks direct-field round trips, native form decoding, safe rendering, defaults,
+required/draft behaviour, and native max_num enforcement. The browser suite
+collects 17 tests; its focused direct-field HTTP save/reload journey needs a local
+run. Connected-browser snapshot checks verified actual direct-field typing,
+native outer duplication for text and rich text, and confirmed conversion back
+to a native paragraph without changing the original table. No live user content
+was modified or included in the committed captures. Two native image-rendition
+ResourceWarnings remain; package frontend and Python implementation are unchanged.
+
+
+## HTML table support inventory — 22 November 2026
+
+Added docs/research/table-editor-ux/html-table-support.md after checking MDN's ten
+table-family element references and the current Python validators/renderers.
+The inventory separates modern table-specific attributes, relevant global/ARIA
+attributes, obsolete presentation attributes, native JSON metadata, and actual
+published output. It includes default Wagtail 8.1 TableBlock/TypedTableBlock
+comparison columns verified against their installed templates and sample renders.
+
+Explicit limitations include unpublished column widths, no col/colgroup/tfoot
+model, no manual scope/header IDs, generated edge-header associations rather
+than arbitrary header hierarchies, positive bounded spans (no rowspan=0), and
+configured block content's separate HTML responsibility inside th/td. The editor's
+Summary is description plus aria-describedby, not the obsolete summary attribute.
+No runtime code or supported HTML vocabulary changed. Existing validator/renderer
+tests and focused sample rendering verify the implementation claims; research
+links were checked. This is an inventory, not a new accessibility audit.

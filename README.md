@@ -151,7 +151,9 @@ visible warnings about current rendering limitations. Fixture details are in
 [the accessibility fixture guide](tests/fixtures/accessibility/README.md).
 The `/table-editor-comparison/` page places native Wagtail TableBlock,
 TypedTableBlock, and our text/hybrid editors in the same admin form, with matched
-small and wide examples and mixed block content.
+small and wide examples and mixed block content. The
+[hybrid interaction study](docs/research/table-editor-ux/hybrid-interactions.md)
+records the baseline, screenshots, and proposed experiments.
 The `/table-cell-content-comparison/` page focuses on direct CharBlock and
 RichTextBlock cells versus one-item and multi-item StreamBlocks, paired with
 TypedTableBlock examples. Existing comparison pages do not need to be reset.

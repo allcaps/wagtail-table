@@ -1,13 +1,31 @@
 # Table editor UX research
 
 Status: historical review and the first live-demo comparison completed on
-20 November 2026. Current Wagtail baseline screenshots and prototype evaluation
-remain pending.
+20 November 2026. The [hybrid interaction study](hybrid-interactions.md), comparison
+demo, and twenty Wagtail baseline captures were added on 22 November 2026.
+Prototype review and a full local HTTP/browser integration run remain pending.
 
 Start with the [visual comparison report](comparison.md): TinyMCE 8.10.2 and
 CKEditor 5 49.1.0, with 17 screenshots of table interactions, observed keyboard
 behavior, and proposed experiments. The [capture index](screenshots/README.md)
 records source pages, versions, dates, and the setup used for the screenshots.
+
+For the current question—moving between table selection and embedded editing—
+start with [hybrid interactions and quiet cell states](hybrid-interactions.md).
+It compares native Wagtail TableBlock, TypedTableBlock, and our text/hybrid tables,
+diagnoses the caret/selection CSS leak and width overflow, and proposes two
+prototype directions. Run `make demo` and open `/table-editor-comparison/` to
+inspect the editors together. Its [capture index](screenshots/hybrid/README.md)
+explains the offline snapshot method and what was not tested. A focused second
+page, `/table-cell-content-comparison/`, compares direct fields, one-item block
+choices, and multi-item sequences. Direct fields are an existing supported API;
+the study treats crowded StreamBlock editing as a richer configuration rather
+than the default every integrator needs.
+
+The [HTML table support overview](html-table-support.md) maps all ten standard
+table-family elements and their attributes to our stored model, editor controls,
+and published HTML, with native Wagtail comparisons. MDN links distinguish current
+semantics from deprecated attributes and editor-only DOM details.
 
 ## Background and original idea
 
@@ -27,8 +45,10 @@ or a current assessment of those products. See the
 Today, `wagtail-table` has a native Tiptap/ProseMirror text-table alpha. We want
 to reuse its editing and table manipulation, integrate it with Wagtail StreamField,
 and keep custom code small. The next question is how to make the controls clear,
-compact, and comfortable for ordinary editing tasks. Hybrid Wagtail block cells
-remain a later step, after the text-table UX has been refined.
+compact, and comfortable for ordinary editing tasks. An experimental inline
+hybrid-cell implementation now exists; its interaction boundaries are the focus
+of the follow-up study. The earlier text-editor findings remain historical
+evidence rather than a complete assessment of hybrid editing.
 
 The PDF's creation metadata is dated 17 July 2024; the original writing date and
 author attribution are not established by that metadata. We do not assume that
@@ -48,6 +68,8 @@ These are research questions, not approved design changes.
 | Align content | How should current cell, selected range, row, and column scope be expressed? |
 | Paste and edit a large table | Can editors see, navigate, and modify the table comfortably within StreamField's available width? |
 | Set caption and description | Can editors distinguish the two without keeping unnecessary controls in view? |
+| Move between table and block editing | Which layer owns clicks, drags, keyboard navigation, selection, and focus? |
+| Read inactive block cells | Can native summaries, compact forms, or rendered values provide a quiet state distinct from page preview? |
 
 Reported baseline concerns include button alignment, control placement, and
 limited editing width. Small refinements have since added persistent mutually
@@ -73,5 +95,6 @@ Keep curated research and decisions in Git. Keep raw capture dumps, recordings,
 browser traces, and temporary experiments outside the repository. Preserve the
 original PDF unchanged; a full transcription is not required for this first pass.
 
-Phase 5 in [PLAN.md](../../../PLAN.md) defines the implementation checkpoint.
-No editor behavior or public package API changes are part of these research artifacts.
+Phase 5 in [PLAN.md](https://github.com/allcaps/wagtail-table/blob/main/PLAN.md) defines the implementation checkpoint.
+No package editor behavior or public package API changes are part of this research
+pass. The development-only comparison demo uses the native editors unchanged.
