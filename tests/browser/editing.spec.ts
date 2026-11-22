@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { saveDraftAndReload } from './admin';
 
 test('native table operations, headers, alignment, and metadata survive publishing', async ({ page }) => {
   const errors: string[] = [];
@@ -79,8 +80,7 @@ test('native table operations, headers, alignment, and metadata survive publishi
   await expect(merge).toBeDisabled();
   await expect(split).toBeDisabled();
 
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(widget.getByLabel('Caption', { exact: true })).toHaveValue('Stock counts');
   await expect(widget.getByLabel('Summary', { exact: true })).toHaveValue('Each row lists one product.');
   await page.getByRole('navigation', { name: 'Actions (footer)' })

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { saveDraftAndReload } from './admin';
 
 test('comparison page restores and saves native and Tiptap table editors together', async ({ page }) => {
   await page.goto('/admin/login/');
@@ -25,8 +26,7 @@ test('comparison page restores and saves native and Tiptap table editors togethe
   const nestedInput = hybrid.locator('[data-wagtail-cell] input[type=text]').first();
   await hybrid.locator('[data-cell-edit]').first().click();
   await nestedInput.fill('Updated hybrid details');
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(legacy.locator('.ht_master tbody')).toContainText('Native apples');
   await expect(page.locator('input[name=body-5-value-cell-0-0]')).toHaveValue('Typed apples');
   await expect(text.locator('td p').first()).toContainText('Edited');
@@ -69,8 +69,7 @@ test('direct fields and one-item choices preserve native editing, duplication, a
   await expect(tables).toHaveCount(6);
   await expect(tables.nth(3).locator('[data-wagtail-cell] [contenteditable=true]').first())
     .toContainText('revised');
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(tables).toHaveCount(6);
   for (const index of [0, 1]) {
     await expect(tables.nth(index).locator('[data-wagtail-cell] input[type=text]').first())
@@ -91,8 +90,7 @@ test('direct fields and one-item choices preserve native editing, duplication, a
   await tables.nth(1).getByRole('button', { name: 'Use text', exact: true }).click();
   await expect(cell.locator('[data-wagtail-cell]')).toHaveCount(0);
   await expect(cell.locator('p')).toHaveText('');
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(cell.locator('[data-wagtail-cell]')).toHaveCount(0);
   await expect(tables.nth(0).locator('[data-wagtail-cell] input[type=text]').first())
     .toHaveValue('Direct field updated');

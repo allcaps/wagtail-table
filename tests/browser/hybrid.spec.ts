@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { saveDraftAndReload } from './admin';
 
 async function addContent(page: Page, cell: Locator, name: string) {
   await cell.getByTitle('Insert a block', { exact: true }).last().click();
@@ -96,8 +97,7 @@ test('inline rich text, image, and emoji share a cell and survive duplication an
   const ids = await widgets.evaluateAll(roots => roots.flatMap(root =>
     [...root.querySelectorAll('[id]')].map(el => el.id)));
   expect(new Set(ids).size).toBe(ids.length);
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(widgets).toHaveCount(2);
   for (const table of await widgets.all()) {
     await expect(table.locator('.Draftail-Editor [contenteditable=true]')).toHaveText('Helpful hybrid details');

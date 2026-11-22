@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { saveDraftAndReload } from './admin';
 
 test('quiet cells share one edit interaction and preserve native selection and unsaved values', async ({ page }) => {
   const errors: string[] = [];
@@ -74,8 +75,7 @@ test('quiet cells share one edit interaction and preserve native selection and u
   await expect(block.locator('[data-cell-quiet]')).toHaveText('Quiet current unsaved value');
   const submitted = await table.locator(':scope > input[type=hidden]').inputValue();
   expect(submitted).not.toContain('"quiet"');
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(tables.first().locator('[data-cell-quiet]').first()).toHaveText('Quiet current unsaved value');
   expect(errors).toEqual([]);
 });
