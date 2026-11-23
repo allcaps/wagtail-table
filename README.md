@@ -3,11 +3,11 @@
 A native Tiptap table editor for Wagtail StreamField. This early alpha provides
 native text-table editing, JSON persistence, and safe server-side rendering.
 
-Version `0.1.0a1` is experimental and intended for evaluation. Public APIs and
+Version `0.1.0a2` is experimental and intended for evaluation. Public APIs and
 stored data may change before a stable release; automatic migrations between
-alpha versions are not promised. Back up content before upgrading. This checkout
-also includes experimental hybrid cells, which are not in the published
-`0.1.0a1` release. A full accessibility review and real external-application
+alpha versions are not promised. Back up content before upgrading. This alpha
+includes experimental hybrid cells with quiet and inline editing states.
+A full accessibility review and real external-application
 clipboard checks remain outstanding.
 
 ```python
@@ -20,7 +20,7 @@ class ContentBlock(blocks.StreamBlock):
     table = TableBlock()
 ```
 
-## Experimental hybrid cells (unreleased)
+## Experimental hybrid cells
 
 Pass a native Wagtail block definition as `cell_block`. Use a direct block when
 converted cells should always contain that field type, without StreamBlock
@@ -72,7 +72,7 @@ A one-item StreamBlock still has sequence and choice controls; it is not the sam
 interface as a direct block. No one-item limit is imposed on other configurations.
 
 Cells start as native text cells. Select one or more cells and choose **Cell → Use
-Wagtail block**. On the quiet-cell experiment branch, a pencil opens the configured
+Wagtail block**. A pencil opens the configured
 native editor inside the cell; **Done** returns to its passive representation.
 Interacting with the table or another pencil also finishes and preserves the edit.
 Direct fields and both kinds of StreamBlock use this same interaction. Choose
@@ -110,7 +110,7 @@ contains editable rich text and emoji; empty cells let you try the image chooser
 Install the alpha once published:
 
 ```sh
-pip install wagtail-table==0.1.0a1
+pip install wagtail-table==0.1.0a2
 ```
 
 Add `"wagtail_table"` to

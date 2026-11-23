@@ -4,9 +4,10 @@ A reusable Wagtail StreamField block for editing semantic tables with native
 Tiptap and ProseMirror. Published tables render through Python and Django
 templates. Installing the Python package does not require Node.js.
 
-The text-table package is an alpha release. Hybrid Wagtail block cells are
-experimental and unreleased. Research findings and proposed prototypes describe
-work in progress, not additional shipped features.
+Version 0.1.0a2 is an alpha release with native text tables and experimental hybrid
+Wagtail block cells. Hybrid cells have quiet and inline editing states. Research
+findings and proposed prototypes also describe future work; their inclusion in
+the documentation does not imply that every proposal is implemented.
 
 ## Choose a starting point
 

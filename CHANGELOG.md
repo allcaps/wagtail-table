@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 0.1.0a2 — 2026-11-23
+
+- Add quiet block cells with passive rendered content and labelled pencil controls.
+  Edit native fields inline, then choose Done or interact with the table to retain
+  changes and return to quiet mode. Switching pencils opens the next cell directly.
+  Keep the active editor spacious, with a normal field background and focus outline.
+- Support direct Wagtail fields as well as one-item and multi-item StreamBlocks
+  through the experimental `cell_block` API. Quiet rendering is separate from page
+  preview, and does not change stored content or published rendering.
+- Add matched native Wagtail comparison demos, HTML support and upstream issue
+  research, and searchable mdBook documentation with CI link checks.
+- Improve browser-test synchronization around draft saves and close generated
+  rendition files explicitly in comparison tests.
+
 - Flush native Draftail form values before duplicating or submitting hybrid cells
   so an immediate save retains rich text in duplicated tables.
 

@@ -57,8 +57,8 @@ merged-cell, or range-selection behaviour.
 
 ## Experimental Wagtail block cells
 
-These capabilities are unreleased. Use the current development checkout to
-evaluate them, not the published alpha package.
+Version 0.1.0a2 includes these experimental capabilities for evaluation. Their API
+and stored representation may change before a stable release.
 
 A direct block displays its native field without StreamBlock sequence controls:
 
@@ -92,7 +92,7 @@ Cells initially contain native text. Select cells and choose **Cell → Use Wagt
 block** to activate the configured field or sequence. **Use text** switches back.
 Changing populated cells requires confirmation before their content is cleared.
 
-On the quiet-cell experiment branch, converted cells initially show passive
+Converted cells initially show passive
 rendered content. Activate the pencil to edit the cell with its native Wagtail
 controls. Choose **Done**, interact with the table, or activate another pencil to
 finish and preserve the edit. One cell per table can be edited at a time; table
