@@ -1,6 +1,6 @@
 # Releases
 
-The current release is `0.1.0a2`, an alpha for evaluation with experimental hybrid
+The current release is `0.1.0a3`, an alpha for evaluation with experimental hybrid
 cells and quiet editing states. This does not complete Phase 4. Broader
 accessibility review, external-application clipboard checks, and further UX
 refinement remain outstanding. The first public alpha was `0.1.0a1`.
@@ -63,8 +63,8 @@ Pushing a matching version tag starts publication. Do this only after the
 preparation review and account configuration are complete:
 
 ```sh
-git tag -a v0.1.0a2 -m 'Release 0.1.0a2'
-git push origin v0.1.0a2
+git tag -a v0.1.0a3 -m 'Release 0.1.0a3'
+git push origin v0.1.0a3
 ```
 
 The release workflow verifies the tag/version match, runs the complete test suite
@@ -76,10 +76,10 @@ is configured. Publication does not depend on a previous workflow run's status;
 the tag workflow runs its own checks.
 
 After publication, confirm the PyPI description, metadata links, and downloadable
-files. In a fresh environment, run `pip install wagtail-table==0.1.0a2`, then
+files. In a fresh environment, run `pip install wagtail-table==0.1.0a3`, then
 verify imports and staticfile discovery. Create a GitHub prerelease for the tag,
 using the changelog entry as the release notes.
 
 If upload fails, inspect the job before retrying. Published files cannot be
 overwritten; fixes to an already published alpha need a new version, such as
-`0.1.0a3`. See [PyPI publishing troubleshooting](https://docs.pypi.org/project-management/troubleshooting/).
+`0.1.0a4`. See [PyPI publishing troubleshooting](https://docs.pypi.org/project-management/troubleshooting/).

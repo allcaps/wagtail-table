@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.0a3 — 2026-11-23
+
+- Make browser tests wait for Wagtail's publish confirmation before opening the
+  public page, and replace double-click word selection with explicit keyboard
+  selection when editing a duplicated table.
+- No runtime, public API, or stored-data changes from `0.1.0a2`.
+
 ## 0.1.0a2 — 2026-11-23
 
 - Add quiet block cells with passive rendered content and labelled pencil controls.

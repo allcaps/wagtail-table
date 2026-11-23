@@ -3,7 +3,7 @@
 A native Tiptap table editor for Wagtail StreamField. This early alpha provides
 native text-table editing, JSON persistence, and safe server-side rendering.
 
-Version `0.1.0a2` is experimental and intended for evaluation. Public APIs and
+Version `0.1.0a3` is experimental and intended for evaluation. Public APIs and
 stored data may change before a stable release; automatic migrations between
 alpha versions are not promised. Back up content before upgrading. This alpha
 includes experimental hybrid cells with quiet and inline editing states.
@@ -110,7 +110,7 @@ contains editable rich text and emoji; empty cells let you try the image chooser
 Install the alpha once published:
 
 ```sh
-pip install wagtail-table==0.1.0a2
+pip install wagtail-table==0.1.0a3
 ```
 
 Add `"wagtail_table"` to
