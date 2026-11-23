@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { saveDraftAndReload } from './admin';
+import { publishAndView, saveDraftAndReload } from './admin';
 
 test('starter tables save immediately; deleted tables remain empty drafts until restored', async ({ page }) => {
   await page.goto('/admin/login/');
@@ -59,10 +59,7 @@ test('starter tables save immediately; deleted tables remain empty drafts until 
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
   await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
-  await page.getByRole('navigation', { name: 'Actions (footer)' })
-    .getByRole('button', { name: 'More actions', exact: true }).click();
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
-  await page.goto('/starter-table/');
+  await publishAndView(page, '/starter-table/');
   await expect(page.locator('table')).toHaveCount(1);
   await expect(page.locator('th')).toHaveCount(3);
   await expect(page.locator('td')).toHaveCount(6);
@@ -93,8 +90,11 @@ test('create, duplicate, save, reload, and publish independent native tables', a
   await expect(widgets).toHaveCount(2);
   await expect(widgets.nth(1).locator('th').first()).toHaveText('Original');
   const copiedHeading = widgets.nth(1).locator('th').first().locator('p');
-  // Focus and select the existing word through normal editor interactions.
-  await copiedHeading.dblclick();
+  // Select the single-line heading explicitly; a double-click can leave a
+  // collapsed cursor when the duplicated editor is still receiving focus.
+  await copiedHeading.click();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('Shift+End');
   await page.keyboard.type('Independent');
   await expect(copiedHeading).toHaveText('Independent');
   await expect(widgets.first().locator('th').first()).toHaveText('Original');
@@ -105,10 +105,7 @@ test('create, duplicate, save, reload, and publish independent native tables', a
   await expect(widgets.nth(1).locator('th').first()).toHaveText('Independent');
   await expect(widgets.first().locator('td').first()).toHaveText('Saved immediately');
 
-  await page.getByRole('navigation', { name: 'Actions (footer)' })
-    .getByRole('button', { name: 'More actions', exact: true }).click();
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
-  await page.goto('/browser-table/');
+  await publishAndView(page, '/browser-table/');
   await expect(page.locator('table')).toHaveCount(2);
   await expect(page.locator('table').first().locator('th').first()).toHaveText('Original');
   await expect(page.locator('table').nth(1).locator('th').first()).toHaveText('Independent');

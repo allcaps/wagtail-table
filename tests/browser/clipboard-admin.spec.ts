@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { saveDraftAndReload } from './admin';
+import { publishAndView, saveDraftAndReload } from './admin';
 
 test('real clipboard TSV and HTML paste survive draft reload and publication', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:8009' });
@@ -34,10 +34,7 @@ test('real clipboard TSV and HTML paste survive draft reload and publication', a
   await saveDraftAndReload(page);
   await expect(widget.locator('tr').nth(2).locator('td').first()).toHaveText('Pears');
   await expect(htmlWidget.locator('td').first().locator('br')).toHaveCount(1);
-  await page.getByRole('navigation', { name: 'Actions (footer)' })
-    .getByRole('button', { name: 'More actions', exact: true }).click();
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
-  await page.goto('/pasted-table/');
+  await publishAndView(page, '/pasted-table/');
   await expect(page.locator('table')).toHaveCount(2);
   await expect(page.locator('table').first().locator('tr').nth(1).locator('td')).toHaveText(['Apples', '4', '']);
   await expect(page.locator('table').nth(1).locator('th[colspan="2"]')).toHaveText('Notes');

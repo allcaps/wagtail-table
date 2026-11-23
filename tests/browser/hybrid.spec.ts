@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { saveDraftAndReload } from './admin';
+import { publishAndView, saveDraftAndReload } from './admin';
 
 async function addContent(page: Page, cell: Locator, name: string) {
   await cell.getByTitle('Insert a block', { exact: true }).last().click();
@@ -104,10 +104,7 @@ test('inline rich text, image, and emoji share a cell and survive duplication an
   }
   await expect(widgets.last().locator('select')).toHaveValue('⭐');
   await expect(widgets.first().getByLabel('Alt text', { exact: true })).toHaveValue('Green sample for table');
-  await page.getByRole('navigation', { name: 'Actions (footer)' })
-    .getByRole('button', { name: 'More actions', exact: true }).click();
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
-  await page.goto('/hybrid-browser/');
+  await publishAndView(page, '/hybrid-browser/');
   await expect(page.locator('table')).toHaveCount(2);
   await expect(page.getByText('Helpful hybrid details', { exact: true })).toHaveCount(2);
   await expect(page.getByAltText('Green sample for table')).toHaveCount(2);

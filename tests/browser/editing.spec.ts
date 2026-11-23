@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { saveDraftAndReload } from './admin';
+import { publishAndView, saveDraftAndReload } from './admin';
 
 test('native table operations, headers, alignment, and metadata survive publishing', async ({ page }) => {
   const errors: string[] = [];
@@ -83,10 +83,7 @@ test('native table operations, headers, alignment, and metadata survive publishi
   await saveDraftAndReload(page);
   await expect(widget.getByLabel('Caption', { exact: true })).toHaveValue('Stock counts');
   await expect(widget.getByLabel('Summary', { exact: true })).toHaveValue('Each row lists one product.');
-  await page.getByRole('navigation', { name: 'Actions (footer)' })
-    .getByRole('button', { name: 'More actions', exact: true }).click();
-  await page.getByRole('button', { name: 'Publish', exact: true }).click();
-  await page.goto('/editing-features/');
+  await publishAndView(page, '/editing-features/');
   await expect(page.locator('caption')).toHaveText('Stock counts');
   await expect(page.locator('thead')).toHaveCount(1);
   await expect(page.locator('th[scope="row"]')).toHaveCount(2);
