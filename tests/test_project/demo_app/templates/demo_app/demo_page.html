@@ -16,12 +16,21 @@
         <a href="{% url 'wagtailadmin_pages:edit' page.pk %}">Edit this page</a>
         <a href="{% url 'wagtailadmin_pages:add' 'demo_app' 'demopage' page.pk %}">Add a demo page</a>
         {% for example_page in page.get_site.root_page.get_children.live %}
-          {% if example_page.slug == "table-examples" or example_page.slug == "table-accessibility" %}
+          {% if example_page.slug == "table-examples" or example_page.slug == "table-accessibility" or example_page.slug == "table-hybrid" or example_page.slug == "table-editor-comparison" or example_page.slug == "table-cell-content-comparison" %}
             <a href="{% pageurl example_page %}">{{ example_page.title }}</a>
           {% endif %}
         {% endfor %}
       </nav>
-      {% include_block page.body %}
+      {% if page.slug == "table-editor-comparison" or page.slug == "table-cell-content-comparison" %}
+        {% for block in page.body %}
+          <div class="comparison-example"
+               data-comparison-block="{{ block.block_type }}">
+            {% include_block block %}
+          </div>
+        {% endfor %}
+      {% else %}
+        {% include_block page.body %}
+      {% endif %}
     </main>
   </body>
 </html>

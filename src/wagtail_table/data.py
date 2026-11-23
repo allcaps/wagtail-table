@@ -44,7 +44,7 @@ def default_table_value():
     }
 
 
-def validate_value(value):
+def validate_value(value, *, allow_blocks=False):
     """Reject unsupported data rather than silently dropping content on save."""
     if value is None:
         return
@@ -55,7 +55,7 @@ def validate_value(value):
         raise ValidationError(_("Enter a supported table document.")) from error
     validate_metadata(value)
     table = value.get("table")
-    validate_node(table, ("table",))
+    validate_node(table, ("table",), allow_blocks and value["version"] == 2)
     validate_grid(table["content"])
 
 
@@ -67,7 +67,7 @@ def validate_metadata(value):
         "description",
     }:
         raise ValidationError(_("Enter a supported table document."))
-    if type(value.get("version")) is not int or value["version"] != 1:
+    if type(value.get("version")) is not int or value["version"] not in (1, 2):
         raise ValidationError(_("This table document version is not supported."))
     if not all(
         isinstance(value.get(key, ""), str) for key in ("caption", "description")
@@ -75,18 +75,46 @@ def validate_metadata(value):
         raise ValidationError(_("Table caption and description must be text."))
 
 
-def validate_node(node, allowed_types):
+def validate_node(node, allowed_types, allow_blocks=False):
     if not isinstance(node, dict) or node.get("type") not in allowed_types:
         raise ValidationError(_("The table contains an unsupported content type."))
     node_type = node["type"]
+    if node_type == "wagtailBlock":
+        validate_block_node(node, allow_blocks)
+        return
     if node_type in {"text", "hardBreak"}:
         validate_inline(node)
         return
     if set(node) - {"type", "content", "attrs"}:
         raise ValidationError(_("The table contains unsupported formatting."))
     validate_attrs(node_type, node.get("attrs", {}))
-    for child in validate_children(node):
-        validate_node(child, CHILD_TYPES[node_type])
+    children = validate_children(node)
+    child_types = cell_child_types(node_type, children, allow_blocks)
+    for child in children:
+        validate_node(child, child_types, allow_blocks)
+
+
+def validate_block_node(node, allow_blocks):
+    if (
+        not allow_blocks
+        or set(node) != {"type", "attrs"}
+        or not isinstance(node["attrs"], dict)
+        or set(node["attrs"]) != {"value"}
+    ):
+        raise ValidationError(_("Unsupported Wagtail block cell."))
+
+
+def cell_child_types(node_type, children, allow_blocks):
+    types = CHILD_TYPES[node_type]
+    if not allow_blocks or node_type not in {"tableCell", "tableHeader"}:
+        return types
+    block = any(
+        isinstance(child, dict) and child.get("type") == "wagtailBlock"
+        for child in children
+    )
+    if block and len(children) != 1:
+        raise ValidationError(_("Block cells cannot also contain text paragraphs."))
+    return (*types, "wagtailBlock")
 
 
 def validate_children(node):

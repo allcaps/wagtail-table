@@ -1,4 +1,14 @@
+from django.urls import path
 from wagtail import hooks
+
+from .views import quiet_cell
+
+
+@hooks.register("register_admin_urls")
+def register_table_urls():
+    return [
+        path("wagtail-table/quiet-cell/", quiet_cell, name="wagtail_table_quiet_cell")
+    ]
 
 
 @hooks.register("register_icons")

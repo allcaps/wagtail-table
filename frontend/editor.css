@@ -25,3 +25,18 @@
 .wagtail-table .selectedCell::after { content: ''; position: absolute; inset: 0; background: var(--w-color-focus, #00a4b4); opacity: 0.2; pointer-events: none; }
 .wagtail-table [data-table-error]:not([hidden]) { color: var(--w-color-text-error, #b4191f); margin-top: 0.5rem; }
 .wagtail-table [data-table-status]:not(:empty) { margin-top: 0.5rem; font-weight: 600; }
+.wagtail-table .wagtail-table-block-cell { padding: 0 1.5rem 0 0; font-weight: normal; position: relative; }
+.wagtail-table .wagtail-table-cell-edit { position: absolute; top: 0; right: 0.25rem; padding: 0.25rem; border: 0; background: transparent; color: var(--w-color-text-label-menus-default); cursor: pointer; }
+.wagtail-table .wagtail-table-cell-edit .icon { height: 1rem; width: 1rem; }
+.wagtail-table .wagtail-table-cell-edit:focus-visible { outline: 2px solid var(--w-color-focus); outline-offset: 2px; }
+.wagtail-table [data-cell-quiet] { pointer-events: none; user-select: none; overflow-wrap: anywhere; min-height: 1lh; }
+.wagtail-table [data-cell-quiet] img { max-width: 100%; height: auto; }
+.wagtail-table .tiptap:has([data-wagtail-cell][data-cell-editing]) table { table-layout: auto; }
+.wagtail-table td:has(> [data-cell-editing]), .wagtail-table th:has(> [data-cell-editing]) { min-width: 22rem; background-color: var(--w-color-surface-field); outline: 2px solid var(--w-color-focus); outline-offset: -2px; }
+.wagtail-table .selectedCell:has(> [data-cell-editing])::after { display: none; }
+.wagtail-table [data-wagtail-cell][data-cell-editing] { padding: 2.75rem 0.5rem 0.5rem; min-width: 22rem; box-sizing: border-box; }
+.wagtail-table [data-cell-done] { position: absolute; top: 0.25rem; right: 0.25rem; margin: 0; }
+.wagtail-table .tiptap [data-cell-editing] :is(input, textarea, [contenteditable=true]) { caret-color: auto; user-select: text; }
+.wagtail-table .tiptap [data-cell-editing] ::selection { background: Highlight; color: HighlightText; }
+.wagtail-table .wagtail-table-block-cell .w-field__wrapper { max-width: none; }
+.wagtail-table .wagtail-table-block-cell .Draftail-Editor { min-width: 12rem; }

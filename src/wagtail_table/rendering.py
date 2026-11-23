@@ -16,6 +16,7 @@ class Cell:
     id: str = ""
     scope: str = ""
     headers: str = ""
+    block: object = None
 
     @property
     def bottom(self):

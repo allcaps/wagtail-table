@@ -3,6 +3,7 @@ import { createEditor, tableValue, type TableValue } from './editor';
 import { TableControls } from './controls';
 import './editor.css';
 import { clipboardMessages } from './clipboard';
+import { cellEditorStates, type BlockOptions, type CellEditors } from './hybrid';
 
 type State = TableValue | null | string;
 type Options = { attributes?: Record<string, string> };
@@ -27,6 +28,7 @@ class BoundTable {
   private controls: TableControls;
   private surface: HTMLElement;
   private status: HTMLElement;
+  private cellEditors: CellEditors;
 
   constructor(
     readonly root: HTMLElement,
@@ -34,6 +36,7 @@ class BoundTable {
     id: string,
     private strings: Strings,
     private options: Options = {},
+    private block?: BlockOptions | null,
   ) {
     this.input = root.querySelector('input')!;
     this.surface = root.querySelector('[data-table-editor]')!;
@@ -47,10 +50,31 @@ class BoundTable {
     this.message.id = `${id}-table-error`;
     this.idForLabel = `${id}-editor`;
     this.state = state;
+    this.cellEditors = { cells: new Set(), prefix: this.input.name, counter: 0 };
 
-    this.controls = new TableControls(root, id, this.events.signal, () => this.synchronize());
+    const closeCell = (event: Event) => {
+      const active = this.cellEditors.active;
+      if (active && !active.dom.contains(event.target as Node)) active.close(false);
+    };
+    // Finish before toolbar actions or another pencil runs. Body-mounted native
+    // choosers and insertion popovers are outside this root and remain local.
+    root.addEventListener('click', closeCell, { capture: true, signal: this.events.signal });
+    root.addEventListener('focusin', event => {
+      if ((event.target as Element).closest('[data-table-toolbar], [data-table-metadata]')) closeCell(event);
+    }, { signal: this.events.signal });
+    root.addEventListener('mouseup', event => {
+      // Let ProseMirror finish its document-level mouse handlers before hiding
+      // the expanded editor changes the table's geometry.
+      const active = this.cellEditors.active;
+      if (active && !active.dom.contains(event.target as Node)) queueMicrotask(() => {
+        if (this.cellEditors.active === active) active.close(false);
+      });
+    }, { signal: this.events.signal });
+
+    this.controls = new TableControls(root, id, this.events.signal, () => this.synchronize(), block, () => { this.getValue(); });
 
     this.setState(state);
+    root.closest('form')?.addEventListener('submit', () => this.getValue(), { capture: true, signal: this.events.signal });
     // Wagtail retains deleted blocks in the form as hidden children. Observe
     // wrapper deletion flags as well as DOM removal, including deleted parents.
     // Collapsed panels remain live; reordering is evaluated after DOM mutations.
@@ -66,8 +90,8 @@ class BoundTable {
 
   setState(state: State) {
     this.status.textContent = '';
-    this.state = structuredClone(state);
-    this.input.value = typeof state === 'string' ? state : JSON.stringify(state);
+    this.state = state;
+    this.input.value = typeof state === 'string' ? state : '';
     if (typeof state === 'string') {
       this.editor?.destroy();
       this.editor = undefined;
@@ -84,14 +108,18 @@ class BoundTable {
     } else {
       this.editor = createEditor(this.surface, state, messages => {
         this.status.textContent = messages.map(key => this.strings[key] ?? clipboardMessages[key]).join(' ');
+      }, this.block ? { block: this.block, editors: this.cellEditors } : undefined);
+      this.editor.on('update', ({ transaction }) => this.synchronize(!transaction.getMeta('hybridInitialization')));
+      this.editor.on('transaction', () => {
+        this.controls.refresh(this.editor);
+        for (const cell of this.cellEditors.cells) cell.label();
       });
-      this.editor.on('update', () => this.synchronize());
-      this.editor.on('transaction', () => this.controls.refresh(this.editor));
       const dom = this.editor.view.dom;
       dom.id = this.idForLabel;
       dom.setAttribute('aria-label', this.strings.editor);
       dom.setAttribute('aria-multiline', 'true');
       dom.addEventListener('keydown', event => {
+        if ((event.target as HTMLElement).closest('[data-wagtail-cell]')) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           this.controls.focus();
@@ -104,10 +132,19 @@ class BoundTable {
     this.message.hidden = true;
     this.controls.setMetadata(state);
     this.controls.refresh(this.editor);
+    this.writeValue();
   }
 
-  private synchronize() {
-    const doc = this.editor!.getJSON();
+  private writeValue() {
+    if (!this.editor) return;
+    const doc = this.block ? cellEditorStates(this.editor, this.cellEditors, false) : this.editor.getJSON();
+    const value = tableValue(doc, { caption: this.controls.caption.value, description: this.controls.description.value });
+    this.state = value;
+    this.input.value = JSON.stringify(value);
+  }
+
+  private synchronize(notify = true) {
+    const doc = this.block ? cellEditorStates(this.editor!, this.cellEditors, false) : this.editor!.getJSON();
     try {
       this.state = tableValue(doc, {
         caption: this.controls.caption.value,
@@ -123,14 +160,24 @@ class BoundTable {
       this.message.hidden = false;
     }
     this.controls.refresh(this.editor);
-    this.input.dispatchEvent(new Event('change', { bubbles: true }));
+    if (notify) this.input.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  getValue() { return this.input.value; }
+  getValue() {
+    for (const cell of [...this.cellEditors.cells]) cell.flush();
+    if (this.message.hidden) this.writeValue();
+    return this.input.value;
+  }
 
   getState(): State {
     // Invalid documents remain raw values, rather than duplicating stale content.
     if (!this.message.hidden) return this.input.value;
+    if (this.block && this.editor) {
+      this.getValue();
+      return tableValue(cellEditorStates(this.editor, this.cellEditors, true), {
+        caption: this.controls.caption.value, description: this.controls.description.value,
+      });
+    }
     return structuredClone(this.state);
   }
 
@@ -156,7 +203,7 @@ class BoundTable {
 }
 
 class TableInput {
-  constructor(private html: string, private strings: Strings) {}
+  constructor(private html: string, private strings: Strings, private block?: BlockOptions | null) {}
 
   render(
     placeholder: HTMLElement, name: string, id: string, state: State,
@@ -171,7 +218,7 @@ class TableInput {
     input.name = name;
     input.id = id;
     placeholder.replaceWith(root);
-    return new BoundTable(root, state ?? null, id, this.strings, options);
+    return new BoundTable(root, state ?? null, id, this.strings, options, this.block);
   }
 
   getByName(name: string, container: HTMLElement) {

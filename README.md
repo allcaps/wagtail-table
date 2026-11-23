@@ -5,9 +5,10 @@ native text-table editing, JSON persistence, and safe server-side rendering.
 
 Version `0.1.0a1` is experimental and intended for evaluation. Public APIs and
 stored data may change before a stable release; automatic migrations between
-alpha versions are not promised. Back up content before upgrading. Hybrid
-Wagtail block cells are planned, not implemented. A full accessibility review
-and real external-application clipboard checks remain outstanding.
+alpha versions are not promised. Back up content before upgrading. This checkout
+also includes experimental hybrid cells, which are not in the published
+`0.1.0a1` release. A full accessibility review and real external-application
+clipboard checks remain outstanding.
 
 ```python
 from wagtail import blocks
@@ -19,6 +20,93 @@ class ContentBlock(blocks.StreamBlock):
     table = TableBlock()
 ```
 
+## Experimental hybrid cells (unreleased)
+
+Pass a native Wagtail block definition as `cell_block`. Use a direct block when
+converted cells should always contain that field type, without StreamBlock
+insertion, reorder, and item-choice controls:
+
+```python
+from wagtail import blocks
+from wagtail_table.blocks import TableBlock
+
+
+class ContentBlock(blocks.StreamBlock):
+    text_table = TableBlock(cell_block=blocks.CharBlock())
+    rich_table = TableBlock(
+        cell_block=blocks.RichTextBlock(features=["bold", "italic", "link"])
+    )
+```
+
+A StreamBlock adds a choice of content and allows multiple items per cell, using
+Wagtail's own inline controls. Any limits configured on that StreamBlock apply.
+
+```python
+from wagtail import blocks
+from wagtail.images.blocks import ImageBlock
+from wagtail_table.blocks import TableBlock
+
+
+cell_content = blocks.StreamBlock([
+    ("rich_text", blocks.RichTextBlock(features=["bold", "italic", "link"])),
+    ("image", ImageBlock()),
+    ("emoji", blocks.ChoiceBlock(choices=[("✅", "✅ Yes"), ("⭐", "⭐ Star")])),
+])
+
+
+class ContentBlock(blocks.StreamBlock):
+    table = TableBlock(cell_block=cell_content)
+```
+
+For a choice of block types with at most one item, configure the native limit:
+
+```python
+single_item_content = blocks.StreamBlock(
+    [("rich_text", blocks.RichTextBlock()), ("image", ImageBlock())],
+    max_num=1,
+)
+single_item_table = TableBlock(cell_block=single_item_content)
+```
+
+A one-item StreamBlock still has sequence and choice controls; it is not the same
+interface as a direct block. No one-item limit is imposed on other configurations.
+
+Cells start as native text cells. Select one or more cells and choose **Cell → Use
+Wagtail block**. On the quiet-cell experiment branch, a pencil opens the configured
+native editor inside the cell; **Done** returns to its passive representation.
+Interacting with the table or another pencil also finishes and preserves the edit.
+Direct fields and both kinds of StreamBlock use this same interaction. Choose
+**Use text** to switch back. Changing a populated cell asks for confirmation
+before clearing its contents. Cells already of the requested type retain their
+contents. `TableBlock()` continues to provide text-only tables.
+
+The [quiet-cell experiment](docs/research/table-editor-ux/quiet-block-cells.md)
+separates the editing representation from page preview and records its limits.
+
+This first hybrid version has deliberate limits:
+
+- Merging a selection containing block cells is disabled. Splitting keeps the
+  content in the original cell; new cells are ordinary text cells.
+- Tabular paste is blocked while a table contains block cells. Ordinary text
+  paste into individual text cells still works. Table selections containing block
+  cells cannot be copied, cut, or dragged; copying inside Wagtail's own editors
+  follows their normal behavior. Table drops are blocked in hybrid tables.
+- Tiptap history handles table/text edits; Wagtail rich text uses its own history.
+  This is not a shared undo stack across both editors.
+- Cell-specific comment anchoring is disabled until cells have stable comment paths.
+- Inline block controls can make tables large. Keyboard/focus and browser
+  integration coverage must be reviewed locally before production use.
+
+Existing text tables retain version-1 JSON. Tables with block cells use version 2
+and store native Wagtail prepared values in a `wagtailBlock` node. Form prefixes,
+chooser previews, and Draftail editor state are not stored. There are no new
+persistent cell IDs. Wagtail validates and renders configured blocks, including
+image alt text and reference tracking; unsupported block types are rejected.
+Required block fields may be incomplete in drafts but must validate on publish.
+
+Run the demo migrations and `create_examples` to add `/table-hybrid/`. This page
+contains editable rich text and emoji; empty cells let you try the image chooser.
+
 Install the alpha once published:
 
 ```sh
@@ -29,6 +117,23 @@ Add `"wagtail_table"` to
 `INSTALLED_APPS`. Use `ContentBlock()` in a normal StreamField and FieldPanel.
 Render with Wagtail's `{% include_block page.body %}`. No frontend JavaScript
 or Node.js is required by the installed Python package.
+
+## Read the documentation
+
+The Markdown under `docs/` builds into a searchable mdBook with guides, an HTML
+support reference, and the visual UX research. Install mdBook 0.5.4 with
+`brew install mdbook` on macOS, or use an
+[official release](https://github.com/rust-lang/mdBook/releases/tag/v0.5.4).
+
+```sh
+make docs
+make docs-serve
+```
+
+Open `http://127.0.0.1:3000`. Screenshots link to their full-size originals, and
+wide comparison tables scroll horizontally. Generated files in `book/` are not
+committed. See the [documentation development guide](docs/development.md) for
+source layout and build details.
 
 ## Development
 
@@ -66,6 +171,14 @@ the [W3C WAI Tables Tutorial](https://www.w3.org/WAI/tutorials/tables/). Each in
 its motivation and a source link. Offset headers and changing header bands carry
 visible warnings about current rendering limitations. Fixture details are in
 [the accessibility fixture guide](tests/fixtures/accessibility/README.md).
+The `/table-editor-comparison/` page places native Wagtail TableBlock,
+TypedTableBlock, and our text/hybrid editors in the same admin form, with matched
+small and wide examples and mixed block content. The
+[hybrid interaction study](docs/research/table-editor-ux/hybrid-interactions.md)
+records the baseline, screenshots, and proposed experiments.
+The `/table-cell-content-comparison/` page focuses on direct CharBlock and
+RichTextBlock cells versus one-item and multi-item StreamBlocks, paired with
+TypedTableBlock examples. Existing comparison pages do not need to be reset.
 Existing content is preserved; existing example pages are not rewritten.
 For an already running demo, add the examples with:
 

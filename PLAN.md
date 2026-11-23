@@ -3,8 +3,11 @@
 Status: Phases 0–2 complete. Phase 3 implementation and automated verification
 complete; external-source manual checks pending. The user reports the Phase 4
 alpha publication succeeded; broader Phase 4 work remains. Phase 5 historical
-review and a first current-product comparison are complete; Wagtail baseline
-capture and UX prototypes remain pending. Phase 6 has not started.
+review and a first current-product comparison are complete. A hybrid interaction
+study and native Wagtail comparison demo were added on 22 November 2026, with
+offline admin baseline captures; prototype review and live HTTP/browser checks
+remain pending. Phase 6 now has an experimental
+inline hybrid-cell implementation; full browser verification remains pending.
 Investigation date: 20 November 2026.
 
 ## Development approach
@@ -530,10 +533,11 @@ unavailable checks explicitly and update this plan with evidence and open issues
 
 ### Phase 5 — UX research and refinement
 
-Refine the text-table editing experience before investigating hybrid cells.
-This is a dedicated follow-up phase; it does not start hybrid-cell work or make
-every deferred refinement a requirement for the initial release. Fix obvious
-layout defects during Phase 4 if they obstruct normal use.
+Refine table editing through research and small, reviewed experiments. This phase
+started with text tables and now also examines the experimental Phase 6 hybrid
+cells. Research does not make every deferred refinement a release requirement.
+The current checkpoint covers evidence and a comparison demo, not a new editor
+interaction model. Fix obvious layout defects separately when they obstruct use.
 
 1. Review the original PDF report and write a short prelude covering the original
    motivation, needs that remain relevant, and how ProseMirror and Tiptap inform
@@ -566,14 +570,15 @@ and reviewed editing workflows for small and large tables. Context menus are an
 option to evaluate, not an acceptance requirement. Record remaining limitations
 and run the usual checks before closing this phase.
 
-### Phase 6 — Future hybrid cells; excluded from this implementation
+### Phase 6 — Experimental hybrid cells
 
-Revisit `cell_block` configuration and native Wagtail block definitions only after
-the text editor is stable. Investigate existing StreamField/Telepath conventions
-for a single block, a one-choice StreamBlock, and unrestricted StreamBlock cells.
-Define text/block conversion, identity, merge behavior, and paste behavior then.
-Use the wrapper version for a future migration; do not add cell IDs, sidecar block
-stores, placeholder nodes, or a parallel block editing system in advance.
+The user approved starting inline hybrid cells with developer-configured native
+Wagtail blocks. The initial one-item limit was subsequently removed: StreamBlock
+cells may contain multiple blocks, subject to developer-configured constraints.
+Use the native block definitions and Telepath lifecycle rather than a separate
+editing framework. The implementation record below defines storage, conversion,
+history, and clipboard behavior. Review this experimental workflow before adding
+a dialog or broader table/clipboard interactions for block cells.
 
 ## Deferred refinements from editor feedback
 
@@ -1138,3 +1143,320 @@ associations, public demo HTML, warnings/source links, creating the new page whe
 the earlier one exists, and preserving edited pages on reruns. Browser/editor and
 screen-reader review of the new demo remain manual checks. Existing local demo
 content has not been changed; run create_examples to add the page.
+
+### Experimental inline hybrid cells
+
+Implemented the user-approved hybrid milestone through TableBlock(cell_block=...).
+The demo configures a native StreamBlock with rich text, ImageBlock, and emoji
+ChoiceBlock children. The initial single-item proposal was superseded by the
+user: cells now allow multiple items with no default max_num. Integrator-supplied
+StreamBlock limits still apply. TableBlock() remains text-only.
+
+ProseMirror still owns rows, columns, spans, selection, and table history. An
+atomic wagtailBlock node hosts a native Wagtail Telepath block editor inline,
+with contenteditable=false isolating its DOM and keyboard events. Wagtail widgets
+must be attached to the document before their render methods resolve field IDs;
+ProseMirror then places that same DOM inside the cell. Native insertion pickers
+are attached to document.body so scrolling does not clip them, get unique DOM
+IDs, and are destroyed with their owning node views. Widget observers/listeners
+are also released on deletion. Initial native-state normalization does not mark
+the field dirty.
+
+Text tables retain version 1. Hybrid tables use version 2, storing native Wagtail
+prepared block values in their table document. Live Wagtail form state, including
+Draftail's opaque EditorState, is kept separate from submitted/stored values.
+Runtime field prefixes let the Django widget delegate POST decoding to the
+configured block's value_from_datadict; they are removed before persistence.
+No persistent cell IDs or sidecar content store were introduced. Native Wagtail
+StreamBlock item UUIDs are retained and validated. Duplication uses Wagtail's own
+duplicated-state API for fresh item IDs and independent editors.
+
+Python validation rejects unsupported node/attribute shapes, unknown configured
+block types, invalid item IDs, and mixed native text/block content in a cell.
+Configured blocks perform their normal validation and rendering; rich text uses
+its configured editor conversion/feature allowlist. Native image alt text,
+searchable content, references, and reference content paths are supported.
+Required child validation is deferred for drafts and restored for publication.
+Public block rendering uses Wagtail templates and receives the parent context.
+
+Conversion applies to the native selected cell range, or the current cell. Cells
+already of the requested type retain their contents. Changing populated cells
+requires one confirmation before clearing their contents; cancellation leaves the
+selection and contents intact. Empty cells convert without confirmation. Each
+conversion uses a single ProseMirror transaction and preserves spans and cell
+attributes. Merging across block cells is disabled. Tabular paste is disabled while
+any block cell exists; ordinary prose paste into individual text cells remains.
+Copy/cut/drag of table selections containing block content, and table drops in
+hybrid documents, are blocked to avoid lossy native HTML clipboard conversion.
+Tiptap table/text history and native Wagtail widget history remain separate.
+Cell comment paths are disabled through Wagtail's data-contentpath-disabled
+mechanism because positions do not provide stable comment anchors.
+
+Added a hybrid fixture and /table-hybrid/ demo via create_examples, a separate
+Hybrid table choice in the demo StreamField, and its schema migration. Existing
+demo pages are preserved. The browser server now has isolated temporary media
+and a sample image; demo media URLs are served in DEBUG mode.
+
+Validation: make test passed with 116 Python and 33 TypeScript tests, Ruff,
+template/Django/migration/type checks, and reproducible assets. Two ResourceWarnings
+come from Wagtail's native image-rendition temporary files in the image test.
+The browser suite collects 14 tests, including a new multi-item inline editing,
+image selection, duplication, draft/reload, paste protection, and publish journey.
+Its full run was attempted but server startup is blocked by sandbox permissions.
+Connected-browser checks verified native inline editors, multi-item cells, image
+controls, conversion, independent duplication, zero initial table change events,
+and cleanup. Actual captured browser form data decoded to stable native prepared
+values and safe server-rendered HTML. These targeted checks do not constitute a
+full browser save/publish pass.
+
+Direct wheel/sdist content checks and an extracted-wheel smoke check passed.
+The fresh-environment uv distribution check remains a local/CI task because its
+cache directory is outside sandbox write permissions. No new dependencies were
+added. The hybrid feature remains experimental and unreleased; run the browser
+suite locally before calling this phase complete.
+
+
+### Hybrid cell conversion refinement — 2026-11-21
+
+Use ProseMirror's native CellSelection to convert a whole selected range. Only
+cells whose type changes are replaced. One translated native confirmation protects
+populated cells; cancelling preserves content and selection. Pending inline edits
+are flushed before checking for content. Empty conversions need no confirmation.
+The conversion is one undoable transaction, retaining cell types and spans.
+
+Validation: make test passed with 116 Python and 38 TypeScript tests, including
+mixed ranges, cancellation, empty defaults, merged headers, and whole-range
+undo/redo. Ruff, templates, type checks, and reproducible frontend assets passed.
+The hybrid browser journey now covers batch conversion and confirmation, but its
+run remains unverified: sandbox restrictions prevented the local server starting
+([Errno 1] Operation not permitted). Run make test-browser locally.
+
+### Duplicated rich-text persistence fix — 2026-11-21
+
+The local browser run passed 14 of 15 tests. The hybrid journey exposed a real
+save-timing defect: the duplicated table submitted Draftail's initial hidden-input
+value (`null`) while retaining its live editor state. The trace confirms that the
+loss happened in the first draft POST, before server rendering.
+
+Before explicit value/state reads and form submission, cell owners now call the
+native Draftail editor's saveState method, then synchronize the native block
+value. Mutation observers only synchronize values, preventing repeated native
+saves from feeding back into themselves. No custom rich-text serializer or
+timing delay was introduced.
+
+Added a standalone regression using the installed native Wagtail Draftail assets
+with a deliberately long save interval. It checks duplication, immediate value
+reads, submitted native fields, and independent edits. The full hybrid journey
+now checks rich text in both tables before and after saving, as well as publishing.
+
+Validation: make test passed (116 Python and 38 TypeScript tests), including Ruff,
+type/template checks, and reproducible assets. The browser suite collects 15
+tests. A connected-browser harness using the installed native Draftail verified
+that a duplicate with an initial `null` hidden input flushes and submits its live
+rich text without waiting for the save interval. The full Playwright suite still
+requires a local run because sandbox restrictions block browser/server startup.
+
+
+## Hybrid interaction research and comparison demo — 22 November 2026
+
+The research branch now extends Phases 5 and 6 with an evidence-first review of
+selection versus embedded editing, quiet cell representations, and available
+editing space. The report is docs/research/table-editor-ux/hybrid-interactions.md.
+The historical PDF and first TinyMCE/CKEditor report remain intact.
+
+The development demo adds native Wagtail TableBlock and TypedTableBlock alongside
+our text and hybrid editors. The /table-editor-comparison/ page contains ten
+small, wide, and mixed-content tables, including a CharBlock inside StreamBlock
+cells. A demo-only ResearchCellBlock and migration keep this configuration out of
+the package API. Seeding reuses its sample image and preserves existing pages.
+No package editor, schema, dependency, or frontend asset changes were needed.
+
+Twelve curated baseline screenshots use Django-rendered admin/public responses
+and the installed assets, opened through file URLs in an isolated browser. An
+HTTP server could not bind in the sandbox. These captures establish local DOM
+interaction and layout observations, not HTTP submission, chooser/modal, live
+page-preview, or accessibility conformance results. Their provenance and limits
+are recorded in the capture index; raw snapshots and disposable data stay out of
+Git.
+
+Findings: native text grids select ranges; protected block widgets retain an
+atomic node selection. Clicking embedded widgets activates Tiptap's descendant
+hide-selection styles, making nested input/rich-text carets transparent; rich
+text has a real DOM selection with a transparent highlight. This is a concrete
+integration defect to isolate in a follow-up, not a reason to replace the engines.
+Fixed-width columns are narrower than the existing block-editor minimum width,
+so controls spill across cells even with a scrolling wrapper. Native collapse
+reduces height but retains controls and does not render final content.
+
+The report distinguishes block-picker examples, current-value quiet states, and
+whole-page preview. Native server-side block rendering is reusable, but it is
+not an automatic browser renderer for unsaved form state. Industry patterns are
+linked primary-documentation evidence unless directly observed. Next proposed
+prototypes, in order: a compact table overview with a separate active-cell editor;
+then one active inline editor with an explicit selection mode. Width and expanded
+workspace work complements either. No prototypes or preview endpoints were added.
+
+Validation: make test passed with 118 Python and 38 TypeScript tests, Ruff,
+template/type/Django/migration checks, and reproducible assets. Two native image
+rendition ResourceWarnings remain. The browser suite collects 16 tests, including
+a comparison save/reload journey. Full Playwright execution remains blocked by
+local-server permissions and needs a local run. Connected-browser checks verified
+native TableBlock and Tiptap range selection, nested focus and DOM selection,
+caret/selection CSS values, and native child collapse; they do not replace that
+integration run. Review the two proposed directions before implementing either.
+
+
+## Direct fields versus StreamBlock cells — 22 November 2026
+
+Extended the study to treat direct CharBlock/RichTextBlock cells as primary
+configurations. The package already accepts these through cell_block; no new API
+or storage representation was needed. StreamBlock(max_num=1) remains a distinct
+choice interface, and unrestricted multi-item StreamBlocks remain supported.
+A single ImageBlock/StructBlock may still contain multiple fields; field
+complexity, type choice, and sequence length are separate research dimensions.
+
+Added /table-cell-content-comparison/ with paired native TypedTableBlock and our
+tables for direct text, direct rich text, one-item StreamBlock choices, and
+multi-item StreamBlocks. Demo-only choices and migration 0004 preserve existing
+comparison pages and edits. TypedTableBlock now offers a one_block column type.
+Stable native StreamBlock item UUIDs use distinct keys for each example variant.
+
+Eight matched synthetic-content screenshots extend the capture set to twenty.
+For these six-data-cell tables, observed heights were approximately 259/372/536/
+814px for direct text/direct rich text/one-item sequence/two-item sequence. This
+is fixture-specific layout evidence, not a universal usability claim. The study
+and README now lead with direct fields and reserve larger interaction-model
+experiments primarily for richer configurations. Caret/style isolation remains
+a separate problem for all embedded fields.
+
+Validation: make test passed with 124 Python and 38 TypeScript tests, Ruff,
+Django/migration/template/type checks, and reproducible assets. New Python coverage
+checks direct-field round trips, native form decoding, safe rendering, defaults,
+required/draft behaviour, and native max_num enforcement. The browser suite
+collects 17 tests; its focused direct-field HTTP save/reload journey needs a local
+run. Connected-browser snapshot checks verified actual direct-field typing,
+native outer duplication for text and rich text, and confirmed conversion back
+to a native paragraph without changing the original table. No live user content
+was modified or included in the committed captures. Two native image-rendition
+ResourceWarnings remain; package frontend and Python implementation are unchanged.
+
+
+## HTML table support inventory — 22 November 2026
+
+Added docs/research/table-editor-ux/html-table-support.md after checking MDN's ten
+table-family element references and the current Python validators/renderers.
+The inventory separates modern table-specific attributes, relevant global/ARIA
+attributes, obsolete presentation attributes, native JSON metadata, and actual
+published output. It includes default Wagtail 8.1 TableBlock/TypedTableBlock
+comparison columns verified against their installed templates and sample renders.
+
+Explicit limitations include unpublished column widths, no col/colgroup/tfoot
+model, no manual scope/header IDs, generated edge-header associations rather
+than arbitrary header hierarchies, positive bounded spans (no rowspan=0), and
+configured block content's separate HTML responsibility inside th/td. The editor's
+Summary is description plus aria-describedby, not the obsolete summary attribute.
+No runtime code or supported HTML vocabulary changed. Existing validator/renderer
+tests and focused sample rendering verify the implementation claims; research
+links were checked. This is an inventory, not a new accessibility audit.
+
+
+## mdBook documentation site — 22 November 2026
+
+Added a book.toml and explicit 13-chapter SUMMARY using the existing docs tree.
+New welcome, usage, and development chapters separate integration guidance from
+reference and research. Changelog content uses mdBook's native include of the
+root file rather than a second maintained copy. Existing research pages and
+capture provenance remain part of the book. Thirty-five embedded screenshots
+now link to their originals in both Markdown and the generated site.
+
+The stock mdBook theme provides search, chapter/header navigation, theme choice,
+printing, and scrollable table wrappers. A small project stylesheet widens the
+reading area and gives comparison images usable space without replacing the
+renderer or theme. Repository-source links use GitHub URLs so generated pages do
+not point outside the book. There are no third-party preprocessors or new package
+runtime dependencies. The upstream mdBook MPL-2.0 license was checked before
+selecting the documentation-only tool; the package license is unchanged.
+
+Make docs/docs-serve commands target mdBook 0.5.4. Generated book/ is ignored.
+The docs workflow downloads the official pinned Linux binary, verifies its SHA256
+against the release asset digest, builds the book, and uploads an artifact. It
+does not publish externally. Source distributions include book.toml and docs;
+wheels retain only package contents and do not require mdBook or Rust.
+
+Validation: mdBook 0.5.4 became available through the user's local installation.
+Make docs now builds successfully and runs a standard-library checker for generated
+local links, fragments, and assets across all 16 HTML pages. The built-in index
+preprocessor was disabled while retaining the built-in links/include processor:
+this preserves README.html chapter filenames and prevents existing README.md
+references from turning into broken generated links. No custom preprocessor is
+needed. The same output checker runs in CI after building.
+
+Connected-browser checks verified chapter/header navigation, working search for
+colwidth, loaded research images and full-size image links, and the custom reading
+width. At 390px viewport width, wide tables scroll inside native wrappers without
+making the page overflow. Local source/TOML/include checks, whitespace checks, and
+Ruff pass. The workflow and Linux download recipe have not run on GitHub here;
+there is no public deployment. Generated book output remains ignored.
+
+## Quiet block-cell experiment — 22 November 2026
+
+Implemented on experiment/quiet-block-cells, based on research/hybrid-table-ux.
+The separate corner-selection branch remains unchanged. Direct fields, one-item
+choices, and multi-item StreamBlocks share passive cell rendering, a labelled
+pencil, and an explicit inline Done action. One active cell per table suspends
+outer editing and structural controls while retaining native Wagtail interactions.
+The active cell has a 22rem minimum width inside the scrolling table wrapper.
+
+Native block rendering supplies initial and refreshed quiet content. An
+authenticated, CSRF-protected POST endpoint resolves signed registered block
+definitions and decodes native form fields without enforcing publish-time
+requiredness. Wagtail's HTML whitelister constrains the output to passive content.
+Rendering failures retain data and an edit button. No frontend page assets,
+custom rendering hook, storage migration, or public constructor changes were added.
+
+Native widgets stay mounted in hidden wrappers, distinct from placeholders that
+Wagtail replaces. Quiet HTML is transient and excluded from saved JSON. Draftail
+flushes before Done, duplication, and submission. The outer editor changes from
+textbox to group while editing so nested fields remain exposed to accessibility
+APIs; caret/selection styling is isolated from ProseMirror's hide-selection rules.
+The native table selection code handles ranges; a quiet-cell click uses native
+CellSelection instead of a draggable block-node selection.
+
+Validation: 134 Python tests and 39 TypeScript tests passed, together with Ruff,
+formatting, template/Django/migration checks, type checking, and reproducible
+frontend assets. Documentation builds and local link checks pass. Two existing
+native image-rendition ResourceWarnings remain. New Python tests include a valid
+multipart request processed by CSRF before the rendering view.
+
+After the user started and restarted the disposable browser server, connected
+Chrome checks verified real direct text and rich-text entry, quiet refresh from
+unsaved values, all four comparison configurations, active widths, disabled table
+controls, focus return, native drag selection across three block cells, and actual
+save/reload. A native image chooser also inserted an image into a multi-item
+cell; Done rendered its passive image and alt text. No production content was
+used. The Playwright suite collects 18
+tests; sandbox restrictions block both local server startup and Chromium launch.
+A temporary configuration was supplied for the user to run against their existing
+server. Its full automated result is still pending; physical touch and manual
+screen-reader review remain separate. Experiment details and limits are recorded
+in docs/research/table-editor-ux/quiet-block-cells.md.
+
+### Quiet-cell follow-up: switch back to table interaction
+
+The table now stays editable while a cell editor is open. Another pencil switches
+directly, and table clicks/actions finish the active edit without moving focus
+back to its pencil. Done remains available for explicit completion. Native field
+and body-mounted chooser/popover interactions stay inside cell editing. Mouse
+selection handlers finish before the editor collapses, preserving the range when
+the expanded cell changes the table's geometry. The active cell uses the normal
+field background and a focus outline rather than the green selection overlay.
+
+Connected-browser checks verified retained values when switching pencils,
+available table controls, automatic closure on a table action, actual typing in
+a text cell after clicking out, and native drag selection of two quiet cells
+while another cell editor was open. Type checks, 39 TypeScript tests, frontend
+build/reproducibility checks, documentation links, and whitespace checks pass.
+The Playwright regression journey now includes these transitions; its automated
+execution still needs the user's local browser run because of the sandbox launch
+restriction. No Python API, persistence, or published rendering changes were made
+in this follow-up.

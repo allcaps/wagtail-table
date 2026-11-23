@@ -48,6 +48,17 @@
     <button type="button"
             class="wagtail-table-menu-item"
             data-table-command="toggleHeaderCell">{% translate "Header cell" %}</button>
+    {% if hybrid %}
+      {% translate "This destroys the contents of the selected cells, are you sure?" as conversion_confirmation %}
+      <button type="button"
+              class="wagtail-table-menu-item"
+              data-table-confirm="{{ conversion_confirmation }}"
+              data-table-content="block">{% translate "Use Wagtail block" %}</button>
+      <button type="button"
+              class="wagtail-table-menu-item"
+              data-table-confirm="{{ conversion_confirmation }}"
+              data-table-content="text">{% translate "Use text" %}</button>
+    {% endif %}
     <fieldset class="wagtail-table-alignment">
       <legend>{% translate "Horizontal alignment" %}</legend>
       <div class="wagtail-table-alignment-buttons">

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { saveDraftAndReload } from './admin';
 
 test('starter tables save immediately; deleted tables remain empty drafts until restored', async ({ page }) => {
   await page.goto('/admin/login/');
@@ -17,8 +18,7 @@ test('starter tables save immediately; deleted tables remain empty drafts until 
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
   await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(widget.locator('th, td')).toHaveCount(9);
   await expect(insert).toBeHidden();
   await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(3);
@@ -43,8 +43,7 @@ test('starter tables save immediately; deleted tables remain empty drafts until 
   await expect(insert).toBeVisible();
   await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(widget.locator('table')).toHaveCount(0);
   await expect(insert).toBeVisible();
   await expect(widget.locator('[data-table-menu]:visible')).toHaveCount(0);
@@ -93,11 +92,14 @@ test('create, duplicate, save, reload, and publish independent native tables', a
   await page.getByTitle('Duplicate', { exact: true }).click();
   await expect(widgets).toHaveCount(2);
   await expect(widgets.nth(1).locator('th').first()).toHaveText('Original');
-  await widgets.nth(1).locator('th').first().locator('p').fill('Independent');
+  const copiedHeading = widgets.nth(1).locator('th').first().locator('p');
+  // Focus and select the existing word through normal editor interactions.
+  await copiedHeading.dblclick();
+  await page.keyboard.type('Independent');
+  await expect(copiedHeading).toHaveText('Independent');
   await expect(widgets.first().locator('th').first()).toHaveText('Original');
 
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-  await page.reload();
+  await saveDraftAndReload(page);
   await expect(widgets).toHaveCount(2);
   await expect(widgets.first().locator('th').first()).toHaveText('Original');
   await expect(widgets.nth(1).locator('th').first()).toHaveText('Independent');

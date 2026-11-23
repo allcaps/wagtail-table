@@ -10,9 +10,10 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import type { EditorState } from '@tiptap/pm/state';
 import { VerticalAlignment } from './alignment';
 import { clipboardProps, type ClipboardNotice } from './clipboard';
+import { blockCellExtension, type BlockOptions, type CellEditors } from './hybrid';
 
 export interface TableValue {
-  version: 1;
+  version: 1 | 2;
   table: JSONContent;
   caption: string;
   description: string;
@@ -21,14 +22,16 @@ export interface TableValue {
 export function createEditor(
   element: HTMLElement, value: TableValue | null,
   notify: (messages: ClipboardNotice[]) => void = () => {},
+  hybrid?: { block: BlockOptions; editors: CellEditors },
 ) {
   return new Editor({
     element,
     extensions: [
       Document.extend({ content: 'table?' }), Paragraph, Text, HardBreak,
       TableKit.configure({ tableCell: false, tableHeader: false }),
-      TableCell.extend({ content: 'paragraph+' }),
-      TableHeader.extend({ content: 'paragraph+' }),
+      TableCell.extend({ content: hybrid ? '(paragraph+ | wagtailBlock)' : 'paragraph+' }),
+      TableHeader.extend({ content: hybrid ? '(paragraph+ | wagtailBlock)' : 'paragraph+' }),
+      ...(hybrid ? [blockCellExtension(hybrid.block, hybrid.editors)] : []),
       UndoRedo, VerticalAlignment,
     ],
     content: value ? { type: 'doc', content: [value.table] } : undefined,
@@ -47,7 +50,8 @@ export function tableValue(doc: JSONContent, previous: Pick<TableValue, 'caption
     throw new Error('Only one table can be saved.');
   }
   return {
-    version: 1,
+    version: content[0].content?.some(row => row.content?.some(cell =>
+      cell.content?.some(node => node.type === 'wagtailBlock'))) ? 2 : 1,
     table: content[0],
     caption: previous?.caption ?? '',
     description: previous?.description ?? '',

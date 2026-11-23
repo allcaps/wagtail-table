@@ -1,0 +1,27 @@
+[book]
+title = "wagtail-table"
+description = "A native table editor for Wagtail, with integration guides and UX research."
+authors = ["Coen van der Kamp"]
+language = "en"
+src = "docs"
+
+[build]
+build-dir = "book"
+create-missing = false
+use-default-preprocessors = false
+
+# Preserve README chapter paths so existing Markdown links remain valid.
+[preprocessor.links]
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+no-section-label = true
+sidebar-header-nav = true
+git-repository-url = "https://github.com/allcaps/wagtail-table"
+edit-url-template = "https://github.com/allcaps/wagtail-table/edit/main/{path}"
+additional-css = ["docs/theme/research.css"]
+
+[output.html.fold]
+enable = true
+level = 1

@@ -1,6 +1,7 @@
-import type { EditorProps } from '@tiptap/pm/view';
+import type { EditorProps, EditorView } from '@tiptap/pm/view';
 import { Fragment, Slice, type Node as ProseMirrorNode, type Schema } from '@tiptap/pm/model';
 import { CellSelection, isInTable, selectedRect, TableMap } from '@tiptap/pm/tables';
+import { containsBlock } from './hybrid';
 
 const MAX_TEXT = 2_000_000;
 const MAX_ROWS = 1000;
@@ -8,6 +9,7 @@ const MAX_COLUMNS = 100;
 const MAX_CELLS = 10_000;
 
 export const clipboardMessages = {
+  pasteBlocks: 'Table paste, copy, and cut are unavailable for block cells. You can still paste ordinary text into individual text cells.',
   pasteUnsupported: 'This paste contains multiple or nested tables, surrounding text, or an unsupported table structure. The table was not changed.',
   pasteLimit: 'This paste would exceed the table size limit. The table was not changed.',
   pasteFirst: 'Insert a table before pasting ordinary text, or paste a complete HTML table or tab-separated range.',
@@ -120,7 +122,19 @@ function sourceTable(slice: Slice, schema: Schema): ProseMirrorNode | null {
 
 export function clipboardProps(notify: Notify): EditorProps {
   const reject = (error: unknown) => notify([error instanceof RangeError ? 'pasteLimit' : 'pasteUnsupported']);
+  const protectClipboard = (view: EditorView, event: Event) => {
+    if (!containsBlock(view.state.selection.content().content)) return false;
+    event.preventDefault();
+    notify(['pasteBlocks']);
+    return true;
+  };
   return {
+    handleDOMEvents: { copy: protectClipboard, cut: protectClipboard, dragstart: protectClipboard },
+    handleDrop(view) {
+      if (!containsBlock(view.state.doc)) return false;
+      notify(['pasteBlocks']);
+      return true;
+    },
     transformPastedHTML(html) {
       notify([]);
       try { return prepareHTML(html); }
@@ -145,6 +159,11 @@ export function clipboardProps(notify: Notify): EditorProps {
       if (!slice.size) return true;
       if (slice.size > MAX_TEXT) { notify(['pasteLimit']); return true; }
       const table = sourceTable(slice, view.state.schema);
+      if (containsBlock(view.state.selection.content().content)
+        || (table && containsBlock(view.state.doc))) {
+        notify(['pasteBlocks']);
+        return true;
+      }
       if (!table) {
         if (!isInTable(view.state)) { notify(['pasteFirst']); return true; }
         return false;

@@ -3,15 +3,11 @@
     {% for cell in row %}
       {% if cell.header %}
         <th id="{{ cell.id }}"{% if cell.scope %} scope="{{ cell.scope }}"{% endif %}{% if cell.headers %} headers="{{ cell.headers }}"{% endif %}{% if cell.rowspan > 1 %} rowspan="{{ cell.rowspan }}"{% endif %}{% if cell.colspan > 1 %} colspan="{{ cell.colspan }}"{% endif %}{% if cell.classes %} class="{{ cell.classes }}"{% endif %}>
-          {% for paragraph in cell.content %}
-            <p>{% for text in paragraph.content %}{% if text.type == "hardBreak" %}<br>{% else %}{{ text.text }}{% endif %}{% endfor %}</p>
-          {% endfor %}
+          {% include "wagtail_table/cell_content.html" with cell=cell %}
         </th>
       {% else %}
         <td{% if cell.headers %} headers="{{ cell.headers }}"{% endif %}{% if cell.rowspan > 1 %} rowspan="{{ cell.rowspan }}"{% endif %}{% if cell.colspan > 1 %} colspan="{{ cell.colspan }}"{% endif %}{% if cell.classes %} class="{{ cell.classes }}"{% endif %}>
-          {% for paragraph in cell.content %}
-            <p>{% for text in paragraph.content %}{% if text.type == "hardBreak" %}<br>{% else %}{{ text.text }}{% endif %}{% endfor %}</p>
-          {% endfor %}
+          {% include "wagtail_table/cell_content.html" with cell=cell %}
         </td>
       {% endif %}
     {% endfor %}

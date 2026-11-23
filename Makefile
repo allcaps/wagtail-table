@@ -3,8 +3,16 @@ PYTHON ?= .venv/bin/python
 RUFF ?= .venv/bin/ruff
 DJLINT ?= .venv/bin/djlint
 NPM ?= npm
+MDBOOK ?= mdbook
 
-.PHONY: install test test-browser check-distribution build fix-codestyle demo
+.PHONY: install test test-browser check-distribution build fix-codestyle demo docs docs-serve
+
+docs:
+	$(MDBOOK) build
+	python3 scripts/check_docs.py book
+
+docs-serve:
+	$(MDBOOK) serve --hostname 127.0.0.1 --port 3000
 
 install:
 	uv venv --python $(PYTHON_VERSION)

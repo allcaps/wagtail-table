@@ -12,6 +12,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 INSTALLED_APPS = [
     "tests.test_project.demo_app",
     "wagtail_table",
+    "wagtail.contrib.table_block",
+    "wagtail.contrib.typed_table_block",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
@@ -65,6 +67,6 @@ TEMPLATES = [
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = os.environ.get("WAGTAIL_TABLE_MEDIA_ROOT", BASE_DIR / "media")
 WAGTAIL_SITE_NAME = "Wagtail Table Demo"
 WAGTAILADMIN_BASE_URL = "http://127.0.0.1:8000"
